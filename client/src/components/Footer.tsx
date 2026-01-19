@@ -60,7 +60,6 @@ export default function Footer() {
           <p>&copy; {new Date().getFullYear()} Amandine Guide Conférencière. {t("footer.rights")}.</p>
           <div className="mt-2 space-x-4">
             <Link href="/admin" className="hover:text-white transition-colors">Administration</Link>
-            <Link href="/mentions-legales" className="hover:text-white transition-colors">Mentions légales</Link>
           </div>
         </div>
       </div>
