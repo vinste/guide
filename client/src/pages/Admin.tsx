@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { useAllTestimonials, useApproveTestimonial, useDeleteTestimonial } from "@/hooks/use-testimonials";
@@ -13,13 +13,18 @@ import { Loader2, LogOut, Check, X, Trash2, Mail } from "lucide-react";
 
 export default function Admin() {
   const { user, isLoading, logout } = useAuth();
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const [activeLang, setActiveLang] = useState<"fr" | "de">("fr");
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      setLocation("/");
+    }
+  }, [user, isLoading, setLocation]);
 
   if (isLoading) return <div className="h-screen flex items-center justify-center">Chargement...</div>;
 
   if (!user) {
-    setLocation("/");
     return null;
   }
 
