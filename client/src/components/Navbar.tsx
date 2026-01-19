@@ -2,17 +2,19 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, Facebook, Instagram } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function Navbar() {
+  const { language, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
 
   const links = [
-    { href: "/", label: "Accueil" },
-    { href: "/about", label: "Qui je suis" },
-    { href: "/tours", label: "Visites & Excursions" },
-    { href: "/blog", label: "Journal de bord" },
-    { href: "/contact", label: "Contact & Tarifs" },
+    { href: "/", label: t("nav.home") },
+    { href: "/about", label: t("nav.about") },
+    { href: "/tours", label: t("nav.tours") },
+    { href: "/blog", label: t("nav.blog") },
+    { href: "/contact", label: t("nav.contact") },
   ];
 
   const isActive = (path: string) => location === path;
@@ -42,6 +44,22 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
+            <div className="flex items-center bg-gray-100 rounded-lg p-1 ml-4">
+              <button 
+                onClick={() => setLanguage("fr")}
+                className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${language === "fr" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                FR
+              </button>
+              <button 
+                onClick={() => setLanguage("de")}
+                className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${language === "de" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                DE
+              </button>
+            </div>
+
             <div className="flex items-center space-x-4 pl-4 border-l border-gray-200">
               <a href="#" className="text-primary hover:text-accent transition-colors">
                 <Facebook size={20} />

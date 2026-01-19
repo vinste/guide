@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type InsertTestimonial } from "@shared/routes";
 
-export function useTestimonials() {
+export function useTestimonials(lang?: string) {
   return useQuery({
-    queryKey: [api.testimonials.listPublic.path],
+    queryKey: [api.testimonials.listPublic.path, lang],
     queryFn: async () => {
-      const res = await fetch(api.testimonials.listPublic.path);
+      const path = lang ? `${api.testimonials.listPublic.path}?lang=${lang}` : api.testimonials.listPublic.path;
+      const res = await fetch(path);
       if (!res.ok) throw new Error("Failed to fetch testimonials");
       return api.testimonials.listPublic.responses[200].parse(await res.json());
     },

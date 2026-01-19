@@ -13,6 +13,7 @@ export const testimonials = pgTable("testimonials", {
   content: text("content").notNull(),
   rating: integer("rating").default(5),
   isApproved: boolean("is_approved").default(false),
+  language: text("language").notNull().default("fr"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -24,6 +25,7 @@ export const blogPosts = pgTable("blog_posts", {
   summary: text("summary"),
   imageUrl: text("image_url"),
   isPublished: boolean("is_published").default(false),
+  language: text("language").notNull().default("fr"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -36,6 +38,7 @@ export const tours = pgTable("tours", {
   duration: text("duration"),
   imageUrl: text("image_url"),
   isFeatured: boolean("is_featured").default(false),
+  language: text("language").notNull().default("fr"),
 });
 
 export const inquiries = pgTable("inquiries", {

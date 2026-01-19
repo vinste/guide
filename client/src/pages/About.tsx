@@ -3,8 +3,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function About() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen flex flex-col font-body bg-white">
       <Navbar />
@@ -18,10 +20,10 @@ export default function About() {
               animate={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-display font-bold text-primary mb-4"
             >
-              Qui je suis
+              {t("about.title")}
             </motion.h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Plus qu'un métier, une vocation : partager l'histoire et la culture.
+              {t("about.subtitle")}
             </p>
           </div>
         </div>
@@ -53,45 +55,43 @@ export default function About() {
               className="w-full lg:w-2/3 space-y-8"
             >
               <div>
-                <h2 className="text-3xl font-display font-bold text-secondary mb-4">Mon parcours</h2>
+                <h2 className="text-3xl font-display font-bold text-secondary mb-4">{t("about.journey")}</h2>
                 <div className="prose prose-lg text-gray-600">
                   <p className="mb-4">
-                    Passionnée par l'histoire de l'art et les langues étrangères depuis mon plus jeune âge, j'ai fait de ma passion mon métier.
-                    Diplômée en Histoire de l'Art et titulaire de la carte de Guide-Conférencier national, je sillonne les routes de France depuis plus de 15 ans.
+                    {t("about.journey.p1")}
+                    {t("about.journey.p2")}
                   </p>
                   <p>
-                    Ma spécialité ? L'accueil de la clientèle germanophone. Ayant vécu plusieurs années en Allemagne, je maîtrise non seulement la langue de Goethe, 
-                    mais je comprends aussi les attentes culturelles de mes visiteurs d'outre-Rhin.
+                    {t("about.journey.p3")}
                   </p>
                 </div>
               </div>
 
               <div>
-                <h2 className="text-3xl font-display font-bold text-secondary mb-4">Ma philosophie</h2>
+                <h2 className="text-3xl font-display font-bold text-secondary mb-4">{t("about.philosophy")}</h2>
                 <div className="prose prose-lg text-gray-600">
                   <p className="mb-4">
-                    Je conçois mes visites comme des moments d'échange et de convivialité. L'Histoire ne doit pas être une succession de dates arides, 
-                    mais un récit vivant, incarné par ceux qui l'ont faite.
+                    {t("about.philosophy.p1")}
                   </p>
                   <p>
-                    J'aime particulièrement faire découvrir les petits détails cachés, les anecdotes savoureuses et les artisans locaux qui font vivre le patrimoine aujourd'hui.
+                    {t("about.philosophy.p2")}
                   </p>
                 </div>
               </div>
 
               <div className="bg-indigo-50 p-8 rounded-2xl border-l-4 border-secondary">
-                <h3 className="text-xl font-bold text-primary mb-2">Pourquoi me choisir ?</h3>
+                <h3 className="text-xl font-bold text-primary mb-2">{t("about.why")}</h3>
                 <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>Guide conférencière agréée par l'État</li>
-                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>Bilingue Français / Allemand</li>
-                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>Spécialiste du public sénior</li>
-                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>Connaissance pointue du terroir local</li>
+                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>{t("about.why.1")}</li>
+                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>{t("about.why.2")}</li>
+                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>{t("about.why.3")}</li>
+                  <li className="flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-3"></span>{t("about.why.4")}</li>
                 </ul>
               </div>
 
               <div className="pt-4">
                 <Link href="/contact">
-                  <Button size="lg" className="text-lg px-8">Discutons de votre projet</Button>
+                  <Button size="lg" className="text-lg px-8">{t("about.cta")}</Button>
                 </Link>
               </div>
             </motion.div>

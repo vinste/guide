@@ -21,6 +21,7 @@ export const api = {
     listPublic: {
       method: 'GET' as const,
       path: '/api/testimonials',
+      input: z.object({ lang: z.string().optional() }).optional(),
       responses: {
         200: z.array(z.custom<typeof testimonials.$inferSelect>()),
       },
@@ -63,6 +64,7 @@ export const api = {
     listPublic: {
       method: 'GET' as const,
       path: '/api/blog',
+      input: z.object({ lang: z.string().optional() }).optional(),
       responses: {
         200: z.array(z.custom<typeof blogPosts.$inferSelect>()),
       },
@@ -106,7 +108,7 @@ export const api = {
     list: {
       method: 'GET' as const,
       path: '/api/tours',
-      input: z.object({ region: z.string().optional() }).optional(),
+      input: z.object({ region: z.string().optional(), lang: z.string().optional() }).optional(),
       responses: {
         200: z.array(z.custom<typeof tours.$inferSelect>()),
       },

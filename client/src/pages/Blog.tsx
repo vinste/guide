@@ -1,12 +1,14 @@
 import { Link } from "wouter";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, de } from "date-fns/locale";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useBlogPosts } from "@/hooks/use-blog";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function Blog() {
-  const { data: posts, isLoading } = useBlogPosts();
+  const { language, t } = useLanguage();
+  const { data: posts, isLoading } = useBlogPosts(language);
 
   return (
     <div className="min-h-screen flex flex-col font-body bg-gray-50">
@@ -14,9 +16,9 @@ export default function Blog() {
       
       <div className="bg-teal-900 py-20 text-white pattern-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Journal de bord</h1>
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{t("blog.title")}</h1>
           <p className="text-teal-100 text-xl max-w-2xl mx-auto">
-            Actualités, découvertes et anecdotes historiques.
+            {t("blog.subtitle")}
           </p>
         </div>
       </div>
@@ -30,7 +32,7 @@ export default function Blog() {
           </div>
         ) : posts?.length === 0 ? (
           <div className="text-center py-20">
-            <h3 className="text-xl text-gray-500">Aucun article pour le moment.</h3>
+            <h3 className="text-xl text-gray-500">{t("blog.empty")}</h3>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -47,7 +49,7 @@ export default function Blog() {
                   </div>
                   <div className="p-8 flex flex-col flex-grow">
                     <div className="text-sm text-accent font-bold mb-2 uppercase tracking-wide">
-                      {post.createdAt && format(new Date(post.createdAt), "d MMMM yyyy", { locale: fr })}
+                      {post.createdAt && format(new Date(post.createdAt), "d MMMM yyyy", { locale: language === "fr" ? fr : de })}
                     </div>
                     <h2 className="text-2xl font-display font-bold text-gray-900 mb-4 group-hover:text-primary transition-colors">
                       {post.title}
@@ -56,7 +58,7 @@ export default function Blog() {
                       {post.summary || post.content.substring(0, 150) + "..."}
                     </p>
                     <div className="mt-6 font-bold text-primary flex items-center">
-                      Lire la suite <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                      {t("blog.readmore")} <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
                     </div>
                   </div>
                 </article>

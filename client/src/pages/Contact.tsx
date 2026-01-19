@@ -11,8 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function Contact() {
+  const { t } = useLanguage();
   const [location] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   const subject = searchParams.get("subject") || "";
@@ -54,9 +56,9 @@ export default function Contact() {
       
       <div className="bg-primary py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Contact & Tarifs</h1>
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{t("contact.title")}</h1>
           <p className="text-teal-100 text-xl max-w-2xl mx-auto">
-            Une question ? Un projet de visite ? N'hésitez pas à me solliciter.
+            {t("contact.subtitle")}
           </p>
         </div>
       </div>
