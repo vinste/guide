@@ -80,6 +80,9 @@ const translations = {
     "contact.pricing.service.2": "Demi-journée (4h)",
     "contact.pricing.service.3": "Journée complète (8h)",
     "contact.pricing.note": "* Tarifs donnés à titre indicatif pour un groupe jusqu'à 30 personnes. Majoration dimanches et jours fériés. Demandez un devis personnalisé.",
+    "footer.rights": "Tous droits réservés",
+    "footer.contact": "Contactez-moi",
+    "footer.description": "Guide conférencière germanophone passionnée pour Lyon, le Beaujolais et la Bourgogne du Sud.",
   },
   de: {
     "nav.home": "Startseite",
@@ -152,6 +155,9 @@ const translations = {
     "contact.pricing.service.2": "Halbtagesausflug (4 Std.)",
     "contact.pricing.service.3": "Ganztagesausflug (8 Std.)",
     "contact.pricing.note": "* Die Preise dienen zur Orientierung für eine Gruppe bis zu 30 Personen. Zuschlag für Sonn- und Feiertage. Fordern Sie ein individuelles Angebot an.",
+    "footer.rights": "Alle Rechte vorbehalten",
+    "footer.contact": "Kontaktieren Sie mich",
+    "footer.description": "Leidenschaftliche deutschsprachige Gästeführerin für Lyon, das Beaujolais und Südburgund.",
   }
 };
 
