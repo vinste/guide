@@ -18,7 +18,8 @@ export async function registerRoutes(
 
   // Testimonials (Public List)
   app.get(api.testimonials.listPublic.path, async (req, res) => {
-    const items = await storage.getPublicTestimonials();
+    const lang = req.query.lang as string | undefined;
+    const items = await storage.getPublicTestimonials(lang);
     res.json(items);
   });
 
@@ -41,7 +42,8 @@ export async function registerRoutes(
 
   // Blog (Public List)
   app.get(api.blog.listPublic.path, async (req, res) => {
-    const items = await storage.getPublicBlogPosts();
+    const lang = req.query.lang as string | undefined;
+    const items = await storage.getPublicBlogPosts(lang);
     res.json(items);
   });
 
@@ -55,7 +57,8 @@ export async function registerRoutes(
   // Tours (Public List)
   app.get(api.tours.list.path, async (req, res) => {
     const region = req.query.region as string | undefined;
-    const items = await storage.getTours(region);
+    const lang = req.query.lang as string | undefined;
+    const items = await storage.getTours(region, lang);
     res.json(items);
   });
   

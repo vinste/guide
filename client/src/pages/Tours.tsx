@@ -6,12 +6,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useTours } from "@/hooks/use-tours";
+import { useLanguage } from "@/hooks/use-language";
 
 const REGIONS = ["Tout", "Lyon", "Beaujolais", "Bourgogne"];
 
 export default function Tours() {
+  const { language, t } = useLanguage();
   const [activeRegion, setActiveRegion] = useState("Tout");
-  const { data: tours, isLoading } = useTours(activeRegion === "Tout" ? undefined : activeRegion);
+  const { data: tours, isLoading } = useTours(activeRegion === "Tout" ? undefined : activeRegion, language);
 
   return (
     <div className="min-h-screen flex flex-col font-body bg-gray-50">
@@ -20,9 +22,9 @@ export default function Tours() {
       {/* Header */}
       <div className="bg-primary py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Visites & Excursions</h1>
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{t("tours.title")}</h1>
           <p className="text-teal-100 text-xl max-w-2xl mx-auto">
-            Explorez notre patrimoine à travers des itinéraires conçus pour vous émerveiller.
+            {t("tours.subtitle")}
           </p>
         </div>
       </div>
@@ -41,7 +43,7 @@ export default function Tours() {
                   : "bg-white text-gray-600 hover:bg-gray-100"
               }`}
             >
-              {region === "Bourgogne" ? "Bourgogne du Sud" : region}
+              {region === "Bourgogne" ? (language === "fr" ? "Bourgogne du Sud" : "Südburgund") : region === "Tout" ? (language === "fr" ? "Tout" : "Alle") : region}
             </button>
           ))}
         </div>
@@ -55,8 +57,8 @@ export default function Tours() {
           </div>
         ) : tours?.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl shadow-sm">
-            <h3 className="text-2xl font-bold text-gray-400 mb-4">Aucune visite trouvée pour cette région</h3>
-            <p className="text-gray-500">Essayez une autre catégorie ou contactez-moi pour du sur-mesure.</p>
+            <h3 className="text-2xl font-bold text-gray-400 mb-4">{t("tours.empty")}</h3>
+            <p className="text-gray-500">{t("tours.empty.desc")}</p>
           </div>
         ) : (
           <motion.div 
@@ -91,7 +93,7 @@ export default function Tours() {
                   <div className="flex flex-col space-y-3 mb-6 text-sm text-gray-500">
                     <div className="flex items-center">
                       <Clock size={16} className="mr-2 text-secondary" />
-                      <span>{tour.duration || "Durée flexible"}</span>
+                      <span>{tour.duration || (language === "fr" ? "Durée flexible" : "Flexible Dauer")}</span>
                     </div>
                     <div className="flex items-center">
                       <MapPin size={16} className="mr-2 text-accent" />
@@ -100,10 +102,10 @@ export default function Tours() {
                   </div>
 
                   <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">{tour.price || "Sur devis"}</span>
+                    <span className="text-lg font-bold text-primary">{tour.price || (language === "fr" ? "Sur devis" : "Auf Anfrage")}</span>
                     <Link href={`/contact?subject=${encodeURIComponent(tour.title)}`}>
                       <Button size="sm" variant="outline" className="rounded-lg hover:bg-primary hover:text-white transition-colors">
-                        Réserver
+                        {t("tours.reserve")}
                       </Button>
                     </Link>
                   </div>

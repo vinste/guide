@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type InsertBlogPost } from "@shared/routes";
 
-export function useBlogPosts() {
+export function useBlogPosts(lang?: string) {
   return useQuery({
-    queryKey: [api.blog.listPublic.path],
+    queryKey: [api.blog.listPublic.path, lang],
     queryFn: async () => {
-      const res = await fetch(api.blog.listPublic.path);
+      const path = lang ? `${api.blog.listPublic.path}?lang=${lang}` : api.blog.listPublic.path;
+      const res = await fetch(path);
       if (!res.ok) throw new Error("Failed to fetch blog posts");
       return api.blog.listPublic.responses[200].parse(await res.json());
     },

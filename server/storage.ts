@@ -14,21 +14,21 @@ export interface IStorage {
   upsertUser(user: InsertUser): Promise<User>;
 
   // Testimonials
-  getPublicTestimonials(): Promise<Testimonial[]>;
+  getPublicTestimonials(lang?: string): Promise<Testimonial[]>;
   getAllTestimonials(): Promise<Testimonial[]>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
   updateTestimonial(id: number, approved: boolean): Promise<Testimonial | undefined>;
   deleteTestimonial(id: number): Promise<void>;
 
   // Blog
-  getPublicBlogPosts(): Promise<BlogPost[]>;
+  getPublicBlogPosts(lang?: string): Promise<BlogPost[]>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
   updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
   deleteBlogPost(id: number): Promise<void>;
 
   // Tours
-  getTours(region?: string): Promise<Tour[]>;
+  getTours(region?: string, lang?: string): Promise<Tour[]>;
   getTour(id: number): Promise<Tour | undefined>;
   createTour(tour: InsertTour): Promise<Tour>;
   updateTour(id: number, tour: Partial<InsertTour>): Promise<Tour | undefined>;
@@ -49,8 +49,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Testimonials
-  async getPublicTestimonials(): Promise<Testimonial[]> {
-    return await db.select().from(testimonials).where(eq(testimonials.isApproved, true)).orderBy(desc(testimonials.createdAt));
+  async getPublicTestimonials(lang?: string): Promise<Testimonial[]> {
+    let query = db.select().from(testimonials).where(eq(testimonials.isApproved, true));
+    if (lang) {
+      query = db.select().from(testimonials).where(and(eq(testimonials.isApproved, true), eq(testimonials.language, lang)));
+    }
+    return await query.orderBy(desc(testimonials.createdAt));
   }
   async getAllTestimonials(): Promise<Testimonial[]> {
     return await db.select().from(testimonials).orderBy(desc(testimonials.createdAt));
@@ -71,8 +75,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Blog
-  async getPublicBlogPosts(): Promise<BlogPost[]> {
-    return await db.select().from(blogPosts).where(eq(blogPosts.isPublished, true)).orderBy(desc(blogPosts.createdAt));
+  async getPublicBlogPosts(lang?: string): Promise<BlogPost[]> {
+    let query = db.select().from(blogPosts).where(eq(blogPosts.isPublished, true));
+    if (lang) {
+      query = db.select().from(blogPosts).where(and(eq(blogPosts.isPublished, true), eq(blogPosts.language, lang)));
+    }
+    return await query.orderBy(desc(blogPosts.createdAt));
   }
   async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
     const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
@@ -91,9 +99,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Tours
-  async getTours(region?: string): Promise<Tour[]> {
-    if (region) {
-      return await db.select().from(tours).where(eq(tours.region, region));
+  async getTours(region?: string, lang?: string): Promise<Tour[]> {
+    let conditions = [];
+    if (region) conditions.push(eq(tours.region, region));
+    if (lang) conditions.push(eq(tours.language, lang));
+    
+    if (conditions.length > 0) {
+      return await db.select().from(tours).where(and(...conditions));
     }
     return await db.select().from(tours);
   }

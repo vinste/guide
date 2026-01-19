@@ -6,10 +6,12 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useTours } from "@/hooks/use-tours";
 import { useTestimonials } from "@/hooks/use-testimonials";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function Home() {
-  const { data: tours } = useTours();
-  const { data: testimonials } = useTestimonials();
+  const { language, t } = useLanguage();
+  const { data: tours } = useTours(undefined, language);
+  const { data: testimonials } = useTestimonials(language);
 
   const featuredTours = tours?.filter(t => t.isFeatured).slice(0, 3) || [];
   const displayTestimonials = testimonials?.slice(0, 3) || [];
@@ -29,8 +31,7 @@ export default function Home() {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-primary leading-tight"
             >
-              Découvrez l'histoire <br/>
-              <span className="text-secondary">au cœur de nos régions</span>
+              {t("hero.title")}
             </motion.h1>
             
             <motion.p 
@@ -39,7 +40,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto lg:mx-0"
             >
-              Guide conférencière germanophone passionnée, je vous accompagne à travers Lyon, le Beaujolais et la Bourgogne du Sud.
+              {t("hero.subtitle")}
             </motion.p>
             
             <motion.div 
@@ -50,12 +51,12 @@ export default function Home() {
             >
               <Link href="/tours">
                 <Button size="lg" className="text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-                  Voir mes visites
+                  {t("hero.cta.tours")}
                 </Button>
               </Link>
               <Link href="/contact">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-2 rounded-xl hover:bg-teal-50 hover:text-primary transition-all">
-                  Me contacter
+                  {t("hero.cta.contact")}
                 </Button>
               </Link>
             </motion.div>
@@ -81,25 +82,25 @@ export default function Home() {
       {/* Introduction */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-primary mb-6">Bienvenue en terres de patrimoine</h2>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-primary mb-6">{t("home.welcome")}</h2>
           <p className="text-lg text-gray-600 leading-relaxed mb-8">
-            Bonjour, je suis Amandine. Que vous soyez un particulier curieux ou une agence de voyage à la recherche d'une expertise locale, je crée pour vous des itinéraires sur-mesure. Mon objectif ? Vous faire vivre l'histoire, la gastronomie et les paysages de notre belle région avec authenticité et convivialité.
+            {t("home.intro")}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
             <div className="p-6 bg-teal-50 rounded-xl">
               <Users className="w-10 h-10 text-primary mx-auto mb-4" />
-              <h3 className="font-bold text-lg mb-2">Pour tous</h3>
-              <p className="text-gray-600">Adapté aux séniors, familles et groupes professionnels.</p>
+              <h3 className="font-bold text-lg mb-2">{t("home.feature.all")}</h3>
+              <p className="text-gray-600">{t("home.feature.all.desc")}</p>
             </div>
             <div className="p-6 bg-fuchsia-50 rounded-xl">
               <Map className="w-10 h-10 text-accent mx-auto mb-4" />
-              <h3 className="font-bold text-lg mb-2">Sur-mesure</h3>
-              <p className="text-gray-600">Des circuits personnalisés selon vos envies et votre rythme.</p>
+              <h3 className="font-bold text-lg mb-2">{t("home.feature.custom")}</h3>
+              <p className="text-gray-600">{t("home.feature.custom.desc")}</p>
             </div>
             <div className="p-6 bg-indigo-50 rounded-xl">
               <Calendar className="w-10 h-10 text-secondary mx-auto mb-4" />
-              <h3 className="font-bold text-lg mb-2">Toute l'année</h3>
-              <p className="text-gray-600">Découvrez les charmes de chaque saison.</p>
+              <h3 className="font-bold text-lg mb-2">{t("home.feature.anytime")}</h3>
+              <p className="text-gray-600">{t("home.feature.anytime.desc")}</p>
             </div>
           </div>
         </div>
@@ -111,12 +112,12 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-end mb-12">
               <div>
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-primary">Visites à la une</h2>
-                <p className="text-gray-600 mt-2">Une sélection de mes coups de cœur</p>
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-primary">{t("home.featured.title")}</h2>
+                <p className="text-gray-600 mt-2">{t("home.featured.subtitle")}</p>
               </div>
               <Link href="/tours">
                 <Button variant="ghost" className="hidden sm:flex items-center text-secondary hover:text-primary hover:bg-transparent p-0 font-bold">
-                  Voir tout le catalogue <ArrowRight className="ml-2 w-5 h-5" />
+                  {t("home.featured.all")} <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
             </div>
@@ -163,7 +164,7 @@ export default function Home() {
       <section className="py-20 bg-secondary/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-primary text-center mb-16">
-            Ce qu'ils disent de moi
+            {t("home.testimonials.title")}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

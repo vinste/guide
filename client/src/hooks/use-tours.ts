@@ -1,14 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type InsertTour } from "@shared/routes";
 
-export function useTours(region?: string) {
+export function useTours(region?: string, lang?: string) {
   return useQuery({
-    queryKey: [api.tours.list.path, region],
+    queryKey: [api.tours.list.path, region, lang],
     queryFn: async () => {
-      // Manually constructing query string since buildUrl is for path params
-      const path = region 
-        ? `${api.tours.list.path}?region=${encodeURIComponent(region)}` 
-        : api.tours.list.path;
+      const params = new URLSearchParams();
+      if (region) params.append("region", region);
+      if (lang) params.append("lang", lang);
+      
+      const path = params.toString() ? `${api.tours.list.path}?${params.toString()}` : api.tours.list.path;
       
       const res = await fetch(path);
       if (!res.ok) throw new Error("Failed to fetch tours");
