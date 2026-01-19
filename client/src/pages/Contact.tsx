@@ -27,7 +27,7 @@ export default function Contact() {
     defaultValues: {
       name: "",
       email: "",
-      message: subject ? `Bonjour, je souhaite des informations concernant : ${subject}` : "",
+      message: subject ? `${t("contact.form.subject")}: ${subject}` : "",
     },
   });
 
@@ -35,15 +35,15 @@ export default function Contact() {
     mutation.mutate(data, {
       onSuccess: () => {
         toast({
-          title: "Message envoyé !",
-          description: "Merci pour votre demande. Je vous répondrai dans les plus brefs délais.",
+          title: t("contact.form.success.title"),
+          description: t("contact.form.success.desc"),
         });
         form.reset();
       },
       onError: () => {
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de l'envoi du message.",
+          title: t("contact.form.error.title"),
+          description: t("contact.form.error.desc"),
           variant: "destructive",
         });
       },
@@ -68,11 +68,11 @@ export default function Contact() {
           
           {/* Contact Form */}
           <div>
-            <h2 className="text-3xl font-display font-bold text-secondary mb-8">Envoyez-moi un message</h2>
+            <h2 className="text-3xl font-display font-bold text-secondary mb-8">{t("contact.form.title")}</h2>
             <Card className="p-8 shadow-lg border-t-4 border-t-accent">
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Votre nom</label>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">{t("contact.form.name")}</label>
                   <Input 
                     {...form.register("name")} 
                     className="h-12 text-lg"
@@ -84,7 +84,7 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Votre email</label>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">{t("contact.form.email")}</label>
                   <Input 
                     {...form.register("email")} 
                     type="email"
@@ -97,11 +97,11 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Votre message</label>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">{t("contact.form.message")}</label>
                   <Textarea 
                     {...form.register("message")} 
                     className="min-h-[150px] text-lg p-4"
-                    placeholder="Décrivez votre projet..."
+                    placeholder={t("contact.form.message.placeholder")}
                   />
                   {form.formState.errors.message && (
                     <p className="text-red-500 text-sm mt-1">{form.formState.errors.message.message}</p>
@@ -115,9 +115,9 @@ export default function Contact() {
                 >
                   {mutation.isPending ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Envoi...
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("contact.form.sending")}
                     </>
-                  ) : "Envoyer ma demande"}
+                  ) : t("contact.form.submit")}
                 </Button>
               </form>
             </Card>
@@ -126,7 +126,7 @@ export default function Contact() {
           {/* Info & Pricing */}
           <div className="space-y-12">
             <div>
-              <h2 className="text-3xl font-display font-bold text-secondary mb-8">Coordonnées</h2>
+              <h2 className="text-3xl font-display font-bold text-secondary mb-8">{t("contact.info.title")}</h2>
               <div className="bg-white p-8 rounded-2xl shadow-sm space-y-6">
                 <div className="flex items-center space-x-4">
                   <div className="bg-teal-50 p-3 rounded-full text-primary">
@@ -145,7 +145,7 @@ export default function Contact() {
                     <Phone size={24} />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Téléphone</div>
+                    <div className="text-sm text-gray-500">{t("contact.info.phone")}</div>
                     <a href="tel:+33600000000" className="text-lg font-bold text-gray-900 hover:text-primary">
                       +33 6 00 00 00 00
                     </a>
@@ -157,9 +157,9 @@ export default function Contact() {
                     <MapPin size={24} />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Zone d'intervention</div>
+                    <div className="text-sm text-gray-500">{t("contact.info.area")}</div>
                     <div className="text-lg font-bold text-gray-900">
-                      Lyon, Beaujolais, Bourgogne du Sud
+                      {t("contact.info.area.desc")}
                     </div>
                   </div>
                 </div>
@@ -167,33 +167,32 @@ export default function Contact() {
             </div>
 
             <div>
-              <h2 className="text-3xl font-display font-bold text-secondary mb-8">Tarifs indicatifs</h2>
+              <h2 className="text-3xl font-display font-bold text-secondary mb-8">{t("contact.pricing.title")}</h2>
               <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-500 uppercase tracking-wider">Prestation</th>
-                      <th className="px-6 py-4 text-right text-sm font-bold text-gray-500 uppercase tracking-wider">Prix à partir de</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-500 uppercase tracking-wider">{t("contact.pricing.service")}</th>
+                      <th className="px-6 py-4 text-right text-sm font-bold text-gray-500 uppercase tracking-wider">{t("contact.pricing.price")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     <tr>
-                      <td className="px-6 py-4">Visite guidée (2h)</td>
+                      <td className="px-6 py-4">{t("contact.pricing.service.1")}</td>
                       <td className="px-6 py-4 text-right font-bold text-primary">180 €</td>
                     </tr>
                     <tr>
-                      <td className="px-6 py-4">Demi-journée (4h)</td>
+                      <td className="px-6 py-4">{t("contact.pricing.service.2")}</td>
                       <td className="px-6 py-4 text-right font-bold text-primary">250 €</td>
                     </tr>
                     <tr>
-                      <td className="px-6 py-4">Journée complète (8h)</td>
+                      <td className="px-6 py-4">{t("contact.pricing.service.3")}</td>
                       <td className="px-6 py-4 text-right font-bold text-primary">400 €</td>
                     </tr>
                   </tbody>
                 </table>
                 <div className="bg-gray-50 px-6 py-4 text-sm text-gray-500 italic">
-                  * Tarifs donnés à titre indicatif pour un groupe jusqu'à 30 personnes. 
-                  Majoration dimanches et jours fériés. Demandez un devis personnalisé.
+                  {t("contact.pricing.note")}
                 </div>
               </div>
             </div>
