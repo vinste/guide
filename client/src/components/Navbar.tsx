@@ -67,6 +67,9 @@ export default function Navbar() {
               <a href="#" className="text-primary hover:text-accent transition-colors">
                 <Instagram size={20} />
               </a>
+              <Link href="/admin" className="text-gray-400 hover:text-primary transition-colors ml-2">
+                <Menu size={18} />
+              </Link>
             </div>
           </div>
 
