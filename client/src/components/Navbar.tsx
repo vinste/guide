@@ -28,8 +28,8 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex flex-col">
-              <span className="font-display text-2xl font-bold text-primary tracking-wide">Amandine Guide</span>
-              <span className="text-xs uppercase tracking-widest text-muted-foreground">Lyon & Bourgogne</span>
+              <span className="font-display text-2xl font-bold text-primary tracking-wide">Amandine Guide Conférencière</span>
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Lyon, Beaujolais & Bourgogne</span>
             </Link>
           </div>
 

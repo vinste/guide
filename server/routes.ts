@@ -221,7 +221,7 @@ async function seedDatabase() {
       title: "Bienvenue sur mon nouveau site !",
       slug: "bienvenue",
       content: "Je suis ravie de vous présenter mon nouveau site web. Vous y trouverez toutes mes visites...",
-      summary: "Lancement du nouveau site d'Amandine Guide.",
+      summary: "Lancement du nouveau site d'Amandine Guide Conférencière.",
       imageUrl: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1",
       isPublished: true
     });

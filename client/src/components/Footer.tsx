@@ -11,7 +11,7 @@ export default function Footer() {
           
           {/* Brand Column */}
           <div className="space-y-4">
-            <h3 className="font-display text-2xl font-bold text-white">Amandine Guide</h3>
+            <h3 className="font-display text-2xl font-bold text-white">Amandine Guide Conférencière</h3>
             <p className="text-teal-100 leading-relaxed max-w-sm">
               {t("footer.description")}
             </p>
