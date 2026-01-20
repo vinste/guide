@@ -34,13 +34,18 @@ export default function About() {
   });
 
   const onSubmit = (data: any) => {
-    createMutation.mutate(data, {
+    createMutation.mutate({ ...data, language }, {
       onSuccess: () => {
         toast({
           title: t("testimonials.success.title"),
           description: t("testimonials.success.description"),
         });
-        form.reset();
+        form.reset({
+          author: "",
+          content: "",
+          rating: 5,
+          language: language
+        });
       }
     });
   };

@@ -50,11 +50,14 @@ export class DatabaseStorage implements IStorage {
 
   // Testimonials
   async getPublicTestimonials(lang?: string): Promise<Testimonial[]> {
-    let query = db.select().from(testimonials).where(eq(testimonials.isApproved, true));
-    if (lang) {
-      query = db.select().from(testimonials).where(and(eq(testimonials.isApproved, true), eq(testimonials.language, lang)));
-    }
-    return await query.orderBy(desc(testimonials.createdAt));
+    const baseCondition = eq(testimonials.isApproved, true);
+    const condition = lang 
+      ? and(baseCondition, eq(testimonials.language, lang))
+      : baseCondition;
+
+    return await db.select().from(testimonials)
+      .where(condition)
+      .orderBy(desc(testimonials.createdAt));
   }
   async getAllTestimonials(): Promise<Testimonial[]> {
     return await db.select().from(testimonials).orderBy(desc(testimonials.createdAt));
