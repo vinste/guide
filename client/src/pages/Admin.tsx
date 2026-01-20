@@ -1,8 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@shared/routes";
 import { useAllTestimonials, useApproveTestimonial, useDeleteTestimonial } from "@/hooks/use-testimonials";
 import { useInquiries } from "@/hooks/use-inquiries";
 import { Button } from "@/components/ui/button";
@@ -75,7 +73,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="testimonials">
-            <TestimonialsPanel activeLang={activeLang} />
+            <TestimonialsPanel />
           </TabsContent>
 
           <TabsContent value="tours">
@@ -130,62 +128,56 @@ function InquiriesPanel() {
   );
 }
 
-function TestimonialsPanel({ activeLang }: { activeLang: string }) {
+function TestimonialsPanel() {
   const { data: testimonials, isLoading } = useAllTestimonials();
-  const approveMutation = useApproveTestimonial();
+  const updateMutation = useApproveTestimonial();
   const deleteMutation = useDeleteTestimonial();
-  const [filterLang, setFilterLang] = useState<string>(activeLang);
-
-  useEffect(() => {
-    setFilterLang(activeLang);
-  }, [activeLang]);
 
   if (isLoading) return <div className="p-8 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
 
-  const filtered = testimonials?.filter(t => t.language === filterLang);
-
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+      <CardHeader>
         <CardTitle>Modération des témoignages</CardTitle>
-        <div className="flex items-center bg-gray-100 rounded-lg p-1 ml-4">
-          <button 
-            onClick={() => setFilterLang("fr")}
-            className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${filterLang === "fr" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-          >
-            FR
-          </button>
-          <button 
-            onClick={() => setFilterLang("de")}
-            className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${filterLang === "de" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-          >
-            DE
-          </button>
-        </div>
       </CardHeader>
       <CardContent>
-        {filtered?.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">Aucun témoignage pour cette langue.</p>
+        {testimonials?.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">Aucun témoignage pour le moment.</p>
         ) : (
           <div className="space-y-4">
-            {filtered?.map((t) => (
+            {testimonials?.map((t) => (
               <div key={t.id} className={`border rounded-lg p-6 transition-colors ${t.isApproved ? 'bg-white border-green-100' : 'bg-yellow-50 border-yellow-200'}`}>
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="font-bold">{t.author}</span>
                       <span className="text-yellow-500 text-sm">★ {t.rating}/5</span>
                       {!t.isApproved && <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full">En attente</span>}
                     </div>
                     <p className="text-gray-600 italic mb-4">"{t.content}"</p>
+                    
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">Langue :</span>
+                      <div className="flex bg-gray-100 p-0.5 rounded-md">
+                        {["fr", "de", "other"].map((l) => (
+                          <button
+                            key={l}
+                            onClick={() => updateMutation.mutate({ id: t.id, language: l })}
+                            className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${t.language === l ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+                          >
+                            {l.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 ml-4">
                     {!t.isApproved && (
                       <Button 
                         size="sm" 
                         className="bg-green-600 hover:bg-green-700"
-                        onClick={() => approveMutation.mutate({ id: t.id, isApproved: true })}
-                        disabled={approveMutation.isPending}
+                        onClick={() => updateMutation.mutate({ id: t.id, isApproved: true })}
+                        disabled={updateMutation.isPending}
                       >
                         <Check size={16} className="mr-1" /> Approuver
                       </Button>
@@ -195,7 +187,8 @@ function TestimonialsPanel({ activeLang }: { activeLang: string }) {
                         size="sm" 
                         variant="outline"
                         className="text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-                        onClick={() => approveMutation.mutate({ id: t.id, isApproved: false })}
+                        onClick={() => updateMutation.mutate({ id: t.id, isApproved: false })}
+                        disabled={updateMutation.isPending}
                       >
                         <X size={16} className="mr-1" /> Masquer
                       </Button>

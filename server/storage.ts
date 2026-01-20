@@ -66,9 +66,9 @@ export class DatabaseStorage implements IStorage {
     const [entry] = await db.insert(testimonials).values(testimonial).returning();
     return entry;
   }
-  async updateTestimonial(id: number, approved: boolean): Promise<Testimonial | undefined> {
+  async updateTestimonial(id: number, data: { isApproved?: boolean, language?: string }): Promise<Testimonial | undefined> {
     const [entry] = await db.update(testimonials)
-      .set({ isApproved: approved })
+      .set(data)
       .where(eq(testimonials.id, id))
       .returning();
     return entry;

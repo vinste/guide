@@ -47,12 +47,12 @@ export function useCreateTestimonial() {
 export function useApproveTestimonial() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, isApproved }: { id: number; isApproved: boolean }) => {
+    mutationFn: async ({ id, isApproved, language }: { id: number; isApproved?: boolean; language?: string }) => {
       const url = buildUrl(api.testimonials.update.path, { id });
       const res = await fetch(url, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isApproved }),
+        body: JSON.stringify({ isApproved, language }),
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update testimonial");

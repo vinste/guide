@@ -115,9 +115,9 @@ export async function registerRoutes(
     res.json(items);
   });
 
-  // Testimonials (Admin Approve)
+  // Testimonials (Admin Update/Approve)
   app.patch(api.testimonials.update.path, requireAdmin, async (req, res) => {
-    const item = await storage.updateTestimonial(Number(req.params.id), req.body.isApproved);
+    const item = await storage.updateTestimonial(Number(req.params.id), req.body);
     if (!item) return res.status(404).json({ message: "Not found" });
     res.json(item);
   });
