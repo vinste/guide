@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type InsertTestimonial } from "@shared/routes";
+import { api, buildUrl } from "@shared/routes";
+import { type InsertTestimonial } from "@shared/schema";
 
 export function useTestimonials(lang?: string) {
   return useQuery({
