@@ -51,9 +51,9 @@ export default function Admin() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Bonjour, {user.firstName || user.email}</span>
-              <Button variant="outline" size="sm" onClick={() => logout()}>
-                <LogOut size={16} className="mr-2" /> Déconnexion
+              <span className="text-sm text-gray-500">Bonjour, {user.firstName || user.email || user.username}</span>
+              <Button variant="outline" size="sm" onClick={() => logout()} disabled={isLoggingOut}>
+                {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut size={16} className="mr-2" />} Déconnexion
               </Button>
             </div>
           </div>
