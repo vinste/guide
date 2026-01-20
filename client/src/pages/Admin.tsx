@@ -12,15 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, LogOut, Check, X, Trash2, Mail } from "lucide-react";
 
 export default function Admin() {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [activeLang, setActiveLang] = useState<"fr" | "de">("fr");
 
   useEffect(() => {
     if (!isLoading && !user) {
-      setLocation("/");
+      window.location.href = "/__replitauth";
     }
-  }, [user, isLoading, setLocation]);
+  }, [user, isLoading]);
 
   if (isLoading) return <div className="h-screen flex items-center justify-center">Chargement...</div>;
 
