@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type InsertTour } from "@shared/routes";
+import { api, buildUrl } from "@shared/routes";
+import { type InsertTour } from "@shared/schema";
 
 export function useTours(region?: string, lang?: string) {
   return useQuery({
