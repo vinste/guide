@@ -79,7 +79,21 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center">
+          <div className="lg:hidden flex items-center space-x-2">
+            <div className="flex items-center bg-gray-100 rounded-lg p-1 mr-2">
+              <button 
+                onClick={() => setLanguage("fr")}
+                className={`px-2 py-0.5 rounded-md text-xs font-bold transition-all ${language === "fr" ? "bg-white text-primary shadow-sm" : "text-gray-400"}`}
+              >
+                FR
+              </button>
+              <button 
+                onClick={() => setLanguage("de")}
+                className={`px-2 py-0.5 rounded-md text-xs font-bold transition-all ${language === "de" ? "bg-white text-primary shadow-sm" : "text-gray-400"}`}
+              >
+                DE
+              </button>
+            </div>
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-primary hover:text-accent p-2"
