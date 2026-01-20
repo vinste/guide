@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, LogOut, Check, X, Trash2, Mail } from "lucide-react";
 
 export default function Admin() {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading, logout, isLoggingOut } = useAuth();
   const [, setLocation] = useLocation();
   const [activeLang, setActiveLang] = useState<"fr" | "de">("fr");
 
@@ -51,7 +51,7 @@ export default function Admin() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Bonjour, {user.firstName || user.email || user.username}</span>
+              <span className="text-sm text-gray-500">Bonjour, {(user as any).firstName || (user as any).email || (user as any).username}</span>
               <Button variant="outline" size="sm" onClick={() => logout()} disabled={isLoggingOut}>
                 {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut size={16} className="mr-2" />} Déconnexion
               </Button>
