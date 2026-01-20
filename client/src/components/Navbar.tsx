@@ -69,12 +69,12 @@ export default function Navbar() {
               <a href="#" className="text-primary hover:text-accent transition-colors">
                 <Instagram size={20} />
               </a>
-              <Link href="/admin">
+              <a href="/admin">
                 <Button size="sm" variant="ghost" className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors">
                   <Lock size={16} />
                   <span>Admin</span>
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
 

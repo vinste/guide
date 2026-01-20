@@ -59,7 +59,7 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-white/10 text-center text-teal-200 text-sm">
           <p>&copy; {new Date().getFullYear()} Amandine Guide Conférencière. {t("footer.rights")}.</p>
           <div className="mt-2 space-x-4">
-            <Link href="/admin" className="hover:text-white transition-colors">Administration</Link>
+            <a href="/admin" className="hover:text-white transition-colors">Administration</a>
           </div>
         </div>
       </div>
