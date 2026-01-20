@@ -5,11 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { useAllTestimonials, useApproveTestimonial, useDeleteTestimonial } from "@/hooks/use-testimonials";
 import { useInquiries } from "@/hooks/use-inquiries";
-import { useTours } from "@/hooks/use-tours";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, LogOut, Check, X, Trash2, Mail } from "lucide-react";
+import { BlogPanel } from "@/components/admin/BlogPanel";
+import { ToursPanel } from "@/components/admin/ToursPanel";
 
 export default function Admin() {
   const { user, isLoading, logout, isLoggingOut } = useAuth();
@@ -87,46 +88,6 @@ export default function Admin() {
         </Tabs>
       </main>
     </div>
-  );
-}
-
-function ToursPanel({ activeLang }: { activeLang: string }) {
-  const { data: tours, isLoading } = useTours(undefined, activeLang);
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gestion des visites ({activeLang.toUpperCase()})</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="bg-white p-12 rounded-xl text-center shadow-sm">
-          <h3 className="text-xl text-gray-500 mb-4">Gestion des visites</h3>
-          <p>Fonctionnalité de création/édition filtrée par langue ({activeLang}).</p>
-          {isLoading ? (
-            <Loader2 className="animate-spin mx-auto mt-4" />
-          ) : (
-            <div className="mt-4 text-left">
-              <p className="text-sm text-gray-400 mb-2">{tours?.length || 0} visite(s) trouvée(s)</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function BlogPanel({ activeLang }: { activeLang: string }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gestion du blog ({activeLang.toUpperCase()})</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="bg-white p-12 rounded-xl text-center shadow-sm">
-          <h3 className="text-xl text-gray-500 mb-4">Gestion du blog</h3>
-          <p>Éditeur d'articles pour la langue {activeLang}.</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
