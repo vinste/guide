@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, LogOut, Check, X, Trash2, Mail } from "lucide-react";
 
 export default function Admin() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [activeLang, setActiveLang] = useState<"fr" | "de">("fr");
 

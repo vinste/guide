@@ -49,7 +49,8 @@ export async function registerRoutes(
 
   // Blog (Public Get One)
   app.get(api.blog.get.path, async (req, res) => {
-    const item = await storage.getBlogPostBySlug(req.params.slug);
+    const slug = Array.isArray(req.params.slug) ? req.params.slug[0] : req.params.slug;
+    const item = await storage.getBlogPostBySlug(slug);
     if (!item) return res.status(404).json({ message: "Post not found" });
     res.json(item);
   });
@@ -230,7 +231,13 @@ async function seedDatabase() {
       author: "Marie et Pierre",
       content: "Une visite inoubliable ! Amandine est passionnée et passionnante.",
       rating: 5,
-      isApproved: true
+      language: "fr"
     });
+    
+    // Auto-approve seeded testimonial
+    const testimonials = await storage.getAllTestimonials();
+    if (testimonials.length > 0) {
+      await storage.updateTestimonial(testimonials[0].id, true);
+    }
   }
 }
