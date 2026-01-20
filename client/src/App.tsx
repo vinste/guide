@@ -13,6 +13,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
+import Login from "@/pages/Login";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/blog/:slug" component={BlogPost} />
       <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
+      <Route path="/login" component={Login} />
       <Route component={NotFound} />
     </Switch>
   );
