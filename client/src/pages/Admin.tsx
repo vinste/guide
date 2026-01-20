@@ -18,9 +18,9 @@ export default function Admin() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      window.location.href = "/__replitauth";
+      setLocation("/login");
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, setLocation]);
 
   if (isLoading) return <div className="h-screen flex items-center justify-center">Chargement...</div>;
 
