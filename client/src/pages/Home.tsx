@@ -124,7 +124,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredTours.map((tour) => (
-                <Link key={tour.id} href={`/tours/${tour.id}`} className="group block h-full">
+                <Link key={tour.id} href={`/contact?subject=${encodeURIComponent(tour.title)}`} className="group block h-full">
                   <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col border border-gray-100">
                     <div className="relative h-64 overflow-hidden">
                       <img 

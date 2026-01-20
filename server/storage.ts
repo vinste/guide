@@ -1,7 +1,7 @@
 import { db } from "./db";
 import {
   users, testimonials, blogPosts, tours, inquiries,
-  type User, type InsertUser, type Testimonial, type InsertTestimonial,
+  type User, type Testimonial, type InsertTestimonial,
   type BlogPost, type InsertBlogPost, type Tour, type InsertTour,
   type Inquiry, type InsertInquiry
 } from "@shared/schema";
@@ -44,7 +44,7 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     return authStorage.getUser(id);
   }
-  async upsertUser(user: InsertUser): Promise<User> {
+  async upsertUser(user: any): Promise<User> {
     return authStorage.upsertUser(user);
   }
 
