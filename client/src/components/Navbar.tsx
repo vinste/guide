@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Facebook, Instagram } from "lucide-react";
+import { Menu, X, Facebook, Instagram, Lock } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-language";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Navbar() {
   const { language, setLanguage, t } = useLanguage();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
 
@@ -67,8 +69,11 @@ export default function Navbar() {
               <a href="#" className="text-primary hover:text-accent transition-colors">
                 <Instagram size={20} />
               </a>
-              <Link href="/admin" className="text-gray-400 hover:text-primary transition-colors ml-2">
-                <Menu size={18} />
+              <Link href="/admin">
+                <Button size="sm" variant="ghost" className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors">
+                  <Lock size={16} />
+                  <span>Admin</span>
+                </Button>
               </Link>
             </div>
           </div>
