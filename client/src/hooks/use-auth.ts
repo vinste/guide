@@ -30,10 +30,21 @@ export function useAuth() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const logoutMutation = useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      queryClient.setQueryData(["/api/auth/user"], null);
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: Record<string, string>) => {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Identifiants incorrects");
+      }
+      return response.json();
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(["/api/auth/user"], user);
     },
   });
 
@@ -41,6 +52,7 @@ export function useAuth() {
     user,
     isLoading,
     isAuthenticated: !!user,
+    loginMutation,
     logout: logoutMutation.mutate,
     isLoggingOut: logoutMutation.isPending,
   };

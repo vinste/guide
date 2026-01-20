@@ -50,7 +50,7 @@ export async function setupAuth(app: any) {
     if (id === "admin") {
       done(null, { id: "admin", username: "admin" });
     } else {
-      done(new Error("Utilisateur non trouvé"), null);
+      done(new Error("Utilisateur non trouvé"));
     }
   });
 }
