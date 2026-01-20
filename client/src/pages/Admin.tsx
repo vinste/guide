@@ -134,15 +134,34 @@ function TestimonialsPanel({ activeLang }: { activeLang: string }) {
   const { data: testimonials, isLoading } = useAllTestimonials();
   const approveMutation = useApproveTestimonial();
   const deleteMutation = useDeleteTestimonial();
+  const [filterLang, setFilterLang] = useState<string>(activeLang);
+
+  useEffect(() => {
+    setFilterLang(activeLang);
+  }, [activeLang]);
 
   if (isLoading) return <div className="p-8 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
 
-  const filtered = testimonials?.filter(t => t.language === activeLang);
+  const filtered = testimonials?.filter(t => t.language === filterLang);
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Modération des témoignages ({activeLang.toUpperCase()})</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+        <CardTitle>Modération des témoignages</CardTitle>
+        <div className="flex items-center bg-gray-100 rounded-lg p-1 ml-4">
+          <button 
+            onClick={() => setFilterLang("fr")}
+            className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${filterLang === "fr" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+          >
+            FR
+          </button>
+          <button 
+            onClick={() => setFilterLang("de")}
+            className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${filterLang === "de" ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+          >
+            DE
+          </button>
+        </div>
       </CardHeader>
       <CardContent>
         {filtered?.length === 0 ? (
