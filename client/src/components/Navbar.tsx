@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Facebook, Instagram, Lock } from "lucide-react";
+import { Menu, X, Facebook, Lock } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-language";
@@ -126,16 +126,10 @@ export default function Navbar() {
             ))}
             <div className="flex items-center space-x-6 px-3 py-4 mt-4 border-t border-gray-100">
               <a
-                href="#"
+                href="https://www.facebook.com/profile.php?id=100012367444143"
                 className="flex items-center space-x-2 text-primary hover:text-accent"
               >
                 <Facebook size={24} /> <span>Facebook</span>
-              </a>
-              <a
-                href="#"
-                className="flex items-center space-x-2 text-primary hover:text-accent"
-              >
-                <Instagram size={24} /> <span>Instagram</span>
               </a>
             </div>
           </div>

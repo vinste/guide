@@ -22,7 +22,7 @@ export default function Tours() {
       {/* Header */}
       <div className="bg-primary py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{t("tours.title")}</h1>
+          <h1 className="text-4xl md:text-5xl text-gray-200 font-display font-bold mb-4">{t("tours.title")}</h1>
           <p className="text-teal-100 text-xl max-w-2xl mx-auto">
             {t("tours.subtitle")}
           </p>
