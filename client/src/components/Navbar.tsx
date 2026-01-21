@@ -72,27 +72,11 @@ export default function Navbar() {
 
             <div className="flex items-center space-x-4 pl-4 border-l border-gray-200">
               <a
-                href="#"
+                href="https://www.facebook.com/profile.php?id=100012367444143"
                 className="text-primary hover:text-accent transition-colors"
               >
                 <Facebook size={20} />
               </a>
-              <a
-                href="#"
-                className="text-primary hover:text-accent transition-colors"
-              >
-                <Instagram size={20} />
-              </a>
-              <Link href="/admin">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors"
-                >
-                  <Lock size={16} />
-                  <span>Admin</span>
-                </Button>
-              </Link>
             </div>
           </div>
 

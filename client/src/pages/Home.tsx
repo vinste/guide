@@ -66,14 +66,14 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="w-full lg:w-1/2 mt-12 lg:mt-0 relative"
+            className="w-full lg:w-1/3 mt-12 lg:mt-0 relative"
           >
             <div className="absolute inset-0 bg-secondary rounded-full opacity-10 blur-3xl transform translate-x-10 translate-y-10"></div>
             {/* Scenic Lyon landscape placeholder */}
             <img 
               src="https://colas.fr.nf/tourisme.png?w=800&auto=format&fit=crop&q=60" 
               alt="Vue panoramique de Lyon" 
-              className="relative rounded-2xl shadow-2xl border-4 border-white transform rotate-2 hover:rotate-0 transition-transform duration-500"
+              className="relative rounded-2xl shadow-2xl border-4 border-white transform rotate-2 hover:rotate-0 transition-transform duration-500 w-3/4 mx-auto"
             />
           </motion.div>
         </div>
