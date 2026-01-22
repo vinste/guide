@@ -102,6 +102,8 @@ const translations = {
     "contact.pricing.service.3": "Journée complète (8h)",
     "contact.pricing.note":
       "* Tarifs donnés à titre indicatif pour un groupe jusqu'à 30 personnes. Majoration dimanches et jours fériés. Demandez un devis personnalisé.",
+    "nav.logo.line1": "Amandine",
+    "nav.logo.line2": "Guide conférencière",
     "footer.rights": "Tous droits réservés",
     "footer.contact": "Contactez-moi",
     "footer.description":
@@ -211,6 +213,8 @@ const translations = {
     "contact.pricing.service.3": "Ganztagesausflug (8 Std.)",
     "contact.pricing.note":
       "* Die Preise dienen zur Orientierung für eine Gruppe bis zu 30 Personen. Zuschlag für Sonn- und Feiertage. Fordern Sie ein individuelles Angebot an.",
+    "nav.logo.line1": "Amandine",
+    "nav.logo.line2": "Reiseleiterin",
     "footer.rights": "Alle Rechte vorbehalten",
     "footer.contact": "Kontaktieren Sie mich",
     "footer.description":
