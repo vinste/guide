@@ -71,7 +71,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-secondary rounded-full opacity-10 blur-3xl transform translate-x-10 translate-y-10"></div>
             {/* Scenic Lyon landscape placeholder */}
             <img 
-              src="https://colas.fr.nf/tourisme.png?w=800&auto=format&fit=crop&q=60" 
+              src="/public/images/hero/montage-lyon-bourgogne-beaujolais.jpg?w=800&auto=format&fit=crop&q=60" 
               alt="Vue panoramique de Lyon" 
               className="relative rounded-2xl shadow-2xl border-4 border-white transform rotate-2 hover:rotate-0 transition-transform duration-500 w-3/4 mx-auto"
             />
