@@ -83,7 +83,7 @@ export default function About() {
               <div className="absolute inset-0 bg-accent rounded-2xl transform translate-x-4 translate-y-4"></div>
               {/* Professional woman placeholder */}
               <img
-                src="https://colas.fr.nf/amandine.jpg?w=800&auto=format&fit=crop&q=80"
+                src="/public/image/about/amandine-2025.jpeg?w=800&auto=format&fit=crop&q=80"
                 alt="Amandine"
                 className="relative rounded-2xl shadow-xl w-full h-auto object-cover aspect-[3/4]"
               />
