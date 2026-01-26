@@ -6,9 +6,10 @@ import { useInquiries } from "@/hooks/use-inquiries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LogOut, Check, X, Trash2, Mail } from "lucide-react";
+import { Loader2, LogOut, Check, X, Trash2, Mail, BarChart3 } from "lucide-react";
 import { BlogPanel } from "@/components/admin/BlogPanel";
 import { ToursPanel } from "@/components/admin/ToursPanel";
+import { AnalyticsPanel } from "@/components/admin/AnalyticsPanel";
 
 export default function Admin() {
   const { user, isLoading, logout, isLoggingOut } = useAuth();
@@ -60,13 +61,21 @@ export default function Admin() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="inquiries" className="space-y-6">
+        <Tabs defaultValue="analytics" className="space-y-6">
           <TabsList className="bg-white p-1 rounded-xl shadow-sm">
+            <TabsTrigger value="analytics" className="rounded-lg px-6">
+              <BarChart3 size={16} className="mr-2" />
+              Analytics
+            </TabsTrigger>
             <TabsTrigger value="inquiries" className="rounded-lg px-6">Messagerie</TabsTrigger>
             <TabsTrigger value="testimonials" className="rounded-lg px-6">Témoignages</TabsTrigger>
             <TabsTrigger value="tours" className="rounded-lg px-6">Visites</TabsTrigger>
             <TabsTrigger value="blog" className="rounded-lg px-6">Blog</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics">
+            <AnalyticsPanel />
+          </TabsContent>
 
           <TabsContent value="inquiries">
             <InquiriesPanel />
