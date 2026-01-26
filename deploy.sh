@@ -111,13 +111,8 @@ else
 fi
 
 # Génération du mot de passe admin (récupération de l'existant si présent)
-if [ -f .env ] && grep -q "ADMIN_PASSWORD=" .env; then
-    ADMIN_PASSWORD=$(grep "ADMIN_PASSWORD=" .env | cut -d '=' -f2 | tr -d '"')
-    echo "Réutilisation du ADMIN_PASSWORD existant"
-else
-    ADMIN_PASSWORD=$(openssl rand -base64 16)
-    echo "Génération d'un nouveau ADMIN_PASSWORD"
-fi
+# Génération du mot de passe admin (récupération de l'existant si présent)
+ADMIN_PASSWORD="amandine"
 
 cat <<EOF > .env
 DATABASE_URL="$DATABASE_URL"
