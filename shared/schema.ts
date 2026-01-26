@@ -50,6 +50,29 @@ export const inquiries = pgTable("inquiries", {
   isRead: boolean("is_read").default(false),
 });
 
+// === UMAMI ANALYTICS TABLES ===
+
+export const analyticsPageviews = pgTable("analytics_pageviews", {
+  id: serial("id").primaryKey(),
+  url: text("url").notNull(),
+  referrer: text("referrer"),
+  title: text("title"),
+  screen: varchar("screen", { length: 20 }),
+  language: varchar("language", { length: 10 }),
+  visitorHash: varchar("visitor_hash", { length: 64 }).notNull(),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const analyticsEvents = pgTable("analytics_events", {
+  id: serial("id").primaryKey(),
+  eventName: text("event_name").notNull(),
+  eventData: text("event_data"), // JSON string
+  url: text("url").notNull(),
+  visitorHash: varchar("visitor_hash", { length: 64 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // === SCHEMAS ===
 
 export const insertTestimonialSchema = createInsertSchema(testimonials).omit({ id: true, createdAt: true, isApproved: true });
@@ -57,14 +80,21 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({ id: tru
 export const insertTourSchema = createInsertSchema(tours).omit({ id: true });
 export const insertInquirySchema = createInsertSchema(inquiries).omit({ id: true, createdAt: true, isRead: true });
 
+export const insertAnalyticsPageviewSchema = createInsertSchema(analyticsPageviews).omit({ id: true, createdAt: true });
+export const insertAnalyticsEventSchema = createInsertSchema(analyticsEvents).omit({ id: true, createdAt: true });
+
 // === TYPES ===
 
 export type Testimonial = typeof testimonials.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type Tour = typeof tours.$inferSelect;
 export type Inquiry = typeof inquiries.$inferSelect;
+export type AnalyticsPageview = typeof analyticsPageviews.$inferSelect;
+export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type InsertTour = z.infer<typeof insertTourSchema>;
 export type InsertInquiry = z.infer<typeof insertInquirySchema>;
+export type InsertAnalyticsPageview = z.infer<typeof insertAnalyticsPageviewSchema>;
+export type InsertAnalyticsEvent = z.infer<typeof insertAnalyticsEventSchema>;
