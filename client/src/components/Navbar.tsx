@@ -28,13 +28,21 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex flex-col">
-              <span className="font-display text-2xl font-bold text-primary tracking-wide">
-                Amandine Guide
-                <br className="sm:hidden lg:block" />
-                Conférencière
+               <span className="font-display text-2xl font-bold text-primary tracking-wide">
+                {language === "fr" ? (
+                  <>
+                    Amandine Guide <br className="sm:hidden lg:block" />
+                    Conférencière
+                  </>
+                ) : (
+                  <>
+                    Amandine <br className="sm:hidden lg:block" />
+                    Reiseleiterin
+                  </>
+                )}
               </span>
               <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                Lyon, Beaujolais & Bourgogne
+                Lyon, Beaujolais & {language === "fr" ? "Bourgogne" : "Burgund"}
               </span>
             </Link>
           </div>
