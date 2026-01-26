@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de déploiement pour VPS OVH (Ubuntu 25.04)
+# Script de déploiement pour VPS OVH (Ubuntu 24.04/25.04)
 # Ce script installe Node.js, PostgreSQL, Nginx, PM2 et configure l'application.
 
 # Mode strict : le script s'arrête si une commande échoue, si une variable n'est pas définie,
@@ -15,6 +15,8 @@ REPO_URL="https://github.com/vinste/guide"
 TARGET_DIR="/var/www/fullstack-js-app"
 DB_NAME="guide_db"
 DB_USER="guide_user"
+# Le port sur lequel l'application écoute (doit correspondre au serveur Express)
+APP_PORT=5000
 
 # Récupération de l'IP publique avec fallback
 IP_PUBLIQUE=$(curl -s --max-time 5 https://ifconfig.me || curl -s --max-time 5 https://api.ipify.org || echo "VOTRE_IP_VPS")
@@ -26,9 +28,13 @@ echo "--- Installation des dépendances système ---"
 sudo apt install -y curl git build-essential nginx postgresql postgresql-contrib ufw
 
 echo "--- Configuration du Pare-feu (UFW) ---"
-sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw --force enable
+# Utilisation du port 22 directement si le profil 'OpenSSH' n'existe pas
+sudo ufw allow 22/tcp || true
+sudo ufw allow OpenSSH || true
+sudo ufw allow 'Nginx Full' || true
+sudo ufw allow 80/tcp || true
+sudo ufw allow 443/tcp || true
+echo "y" | sudo ufw enable
 
 echo "--- Installation de Node.js (LTS) ---"
 if ! command -v node &> /dev/null; then
@@ -52,7 +58,6 @@ if [ ! -d "$TARGET_DIR" ]; then
 else
     echo "Mise à jour du projet existant..."
     cd "$TARGET_DIR"
-    # On s'assure d'être sur la bonne branche et de nettoyer les changements locaux si nécessaire
     git fetch origin
     git reset --hard origin/main
 fi
@@ -71,10 +76,16 @@ if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'
 else
     echo "L'utilisateur $DB_USER existe déjà."
     if [ -f .env ]; then
-        DB_PASS=$(grep DATABASE_URL .env | sed -e 's/.*:\(.*\)@.*/\1/' || echo "ERREUR_PASSWORD")
+        # Extraction propre du mot de passe depuis DATABASE_URL dans le .env
+        DB_PASS=$(grep "DATABASE_URL=" .env | sed -e 's/.*:\(.*\)@.*/\1/' | tr -d '"' || echo "")
+        if [ -z "$DB_PASS" ]; then
+            DB_PASS=$(openssl rand -base64 12)
+            echo "Mise à jour du mot de passe pour l'utilisateur existant..."
+            sudo -u postgres psql -c "ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';"
+        fi
     else
         DB_PASS=$(openssl rand -base64 12)
-        echo "Réinitialisation du mot de passe pour l'utilisateur existant..."
+        echo "Mise à jour du mot de passe pour l'utilisateur existant..."
         sudo -u postgres psql -c "ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';"
     fi
 fi
@@ -87,22 +98,25 @@ if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
 fi
 
 # Gestion du fichier .env
-if [ ! -f .env ]; then
-    echo "Création du fichier .env..."
-    DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
-    cat <<EOF > .env
+echo "Configuration du fichier .env..."
+DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
+cat <<EOF > .env
 DATABASE_URL="$DATABASE_URL"
 NODE_ENV="production"
+PORT=$APP_PORT
 SESSION_SECRET="$(openssl rand -base64 32)"
 REPL_ID="vps-deploy"
 ISSUER_URL="https://replit.com"
 EOF
-else
-    echo "Le fichier .env existe déjà."
-fi
 
 echo "--- Installation des dépendances Node.js ---"
 npm install
+
+# S'assurer que dotenv est bien installé (nécessaire pour PM2)
+if ! npm list dotenv &> /dev/null; then
+    echo "Installation de dotenv..."
+    npm install dotenv
+fi
 
 echo "--- Migration de la base de données ---"
 if ! npm run db:push; then
@@ -120,36 +134,59 @@ echo "--- Lancement de l'application avec PM2 ---"
 # Configuration du startup systemd
 sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME || true
 
-if pm2 list | grep -q "fullstack-js-app"; then
-    pm2 restart "fullstack-js-app"
-else
-    pm2 start dist/index.cjs --name "fullstack-js-app"
-fi
+# Suppression si déjà existant pour forcer la prise en compte du nouveau .env
+pm2 delete fullstack-js-app 2>/dev/null || true
+
+# Lancement avec dotenv en préchargement explicite
+pm2 start dist/index.cjs \
+  --name fullstack-js-app \
+  --node-args="-r dotenv/config" \
+  --cwd "$TARGET_DIR"
+
 pm2 save
 
+echo "--- Vérification du démarrage de l'application ---"
+sleep 2
+pm2 status
+if pm2 status | grep -q "online"; then
+    echo "✓ Application démarrée avec succès"
+else
+    echo "✗ L'application a rencontré un problème au démarrage"
+    pm2 logs fullstack-js-app --lines 30
+    exit 1
+fi
+
 echo "--- Configuration Nginx ---"
-if [ ! -f /etc/nginx/sites-available/fullstack-js-app ]; then
-    cat <<EOF | sudo tee /etc/nginx/sites-available/fullstack-js-app
+# On force la mise à jour de la config Nginx pour s'assurer du port
+cat <<EOF | sudo tee /etc/nginx/sites-available/fullstack-js-app
 server {
     listen 80;
     server_name _;
 
     location / {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://localhost:$APP_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host \$host;
         proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
 EOF
+
+if [ ! -f /etc/nginx/sites-enabled/fullstack-js-app ]; then
     sudo ln -sf /etc/nginx/sites-available/fullstack-js-app /etc/nginx/sites-enabled/
-    sudo rm -f /etc/nginx/sites-enabled/default
-    sudo nginx -t
-    sudo systemctl restart nginx
 fi
+
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl restart nginx
 
 echo "--- Déploiement terminé avec succès ! ---"
 echo "L'application est accessible à l'adresse suivante :"
 echo "http://$IP_PUBLIQUE"
+echo ""
+echo "En cas de problème, vérifiez les logs avec : pm2 logs fullstack-js-app"
