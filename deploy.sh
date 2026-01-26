@@ -110,12 +110,22 @@ else
     echo "Génération d'un nouveau ANALYTICS_SALT"
 fi
 
+# Génération du mot de passe admin (récupération de l'existant si présent)
+if [ -f .env ] && grep -q "ADMIN_PASSWORD=" .env; then
+    ADMIN_PASSWORD=$(grep "ADMIN_PASSWORD=" .env | cut -d '=' -f2 | tr -d '"')
+    echo "Réutilisation du ADMIN_PASSWORD existant"
+else
+    ADMIN_PASSWORD=$(openssl rand -base64 16)
+    echo "Génération d'un nouveau ADMIN_PASSWORD"
+fi
+
 cat <<EOF > .env
 DATABASE_URL="$DATABASE_URL"
 NODE_ENV="production"
 PORT=$APP_PORT
 SESSION_SECRET="$(openssl rand -base64 32)"
 ANALYTICS_SALT="$ANALYTICS_SALT"
+ADMIN_PASSWORD="$ADMIN_PASSWORD"
 REPL_ID="vps-deploy"
 ISSUER_URL="https://replit.com"
 EOF
@@ -213,9 +223,23 @@ echo "✓ Analytics activé (sans cookie, conforme RGPD)"
 echo "✓ Reverse proxy Nginx configuré"
 echo "✓ Application gérée par PM2"
 echo ""
+echo "====================================="
+echo "  IDENTIFIANTS D'ADMINISTRATION"
+echo "====================================="
+echo ""
+echo "URL de connexion : http://$IP_PUBLIQUE/login"
+echo "Nom d'utilisateur : admin"
+echo "Mot de passe : $ADMIN_PASSWORD"
+echo ""
+echo "⚠️  IMPORTANT : Notez ce mot de passe en lieu sûr !"
+echo "Il est également stocké dans : $TARGET_DIR/.env"
+echo ""
+echo "====================================="
+echo ""
 echo "Commandes utiles :"
 echo "  - Logs : pm2 logs fullstack-js-app"
 echo "  - Statut : pm2 status"
 echo "  - Redémarrage : pm2 restart fullstack-js-app"
 echo "  - Stats analytics : curl http://localhost:$APP_PORT/api/analytics/stats"
+echo "  - Voir le mot de passe admin : cat $TARGET_DIR/.env | grep ADMIN_PASSWORD"
 echo ""
