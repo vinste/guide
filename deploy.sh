@@ -111,7 +111,6 @@ else
 fi
 
 # Génération du mot de passe admin (récupération de l'existant si présent)
-# Génération du mot de passe admin (récupération de l'existant si présent)
 ADMIN_PASSWORD="amandine"
 
 cat <<EOF > .env
@@ -137,12 +136,52 @@ if ! npm list dotenv &> /dev/null; then
 fi
 
 echo "--- Migration de la base de données ---"
+echo "Vérification de l'état de la base de données..."
+
+# Vérifier si les tables analytics existent
+ANALYTICS_TABLES_EXIST=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('analytics_pageviews', 'analytics_events');" || echo "0")
+
+if [ "$ANALYTICS_TABLES_EXIST" = "2" ]; then
+    echo "✓ Les tables analytics existent déjà"
+else
+    echo "⚠️  Les tables analytics n'existent pas, exécution de la migration..."
+fi
+
+# Exécuter la migration
 if ! npm run db:push; then
     echo "ERREUR : La migration de la base de données a échoué."
     echo "Vérifiez que toutes les tables (incluant analytics_pageviews et analytics_events) ont été créées."
     exit 1
 fi
-echo "✓ Tables de base de données créées (incluant analytics)"
+
+# Vérifier que les tables analytics ont bien été créées
+ANALYTICS_TABLES_FINAL=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('analytics_pageviews', 'analytics_events');" || echo "0")
+
+if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
+    echo "✓ Tables de base de données créées avec succès (incluant analytics)"
+    
+    # Vérifier la structure des tables
+    echo "Vérification de la structure des tables analytics..."
+    
+    PAGEVIEWS_COLUMNS=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_pageviews';" || echo "0")
+    EVENTS_COLUMNS=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_events';" || echo "0")
+    
+    echo "✓ analytics_pageviews : $PAGEVIEWS_COLUMNS colonnes"
+    echo "✓ analytics_events : $EVENTS_COLUMNS colonnes"
+    
+    # Afficher la liste des colonnes pour débogage
+    echo "
+Structure de analytics_pageviews :"
+    PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "\d analytics_pageviews" || true
+    
+    echo "
+Structure de analytics_events :"
+    PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "\d analytics_events" || true
+else
+    echo "⚠️  AVERTISSEMENT : Les tables analytics n'ont pas été créées correctement"
+    echo "Nombre de tables trouvées : $ANALYTICS_TABLES_FINAL (attendu : 2)"
+    echo "L'application fonctionnera mais l'analytics ne sera pas disponible."
+fi
 
 echo "--- Build de l'application ---"
 if ! npm run build; then
@@ -214,7 +253,11 @@ echo "L'application est accessible à l'adresse suivante :"
 echo "  ➜ http://$IP_PUBLIQUE"
 echo ""
 echo "✓ Base de données : $DB_NAME"
-echo "✓ Analytics activé (sans cookie, conforme RGPD)"
+if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
+    echo "✓ Analytics activé (sans cookie, conforme RGPD)"
+else
+    echo "⚠️  Analytics non disponible (tables non créées)"
+fi
 echo "✓ Reverse proxy Nginx configuré"
 echo "✓ Application gérée par PM2"
 echo ""
@@ -235,6 +278,21 @@ echo "Commandes utiles :"
 echo "  - Logs : pm2 logs fullstack-js-app"
 echo "  - Statut : pm2 status"
 echo "  - Redémarrage : pm2 restart fullstack-js-app"
-echo "  - Stats analytics : curl http://localhost:$APP_PORT/api/analytics/stats"
+if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
+    echo "  - Stats analytics : curl http://localhost:$APP_PORT/api/analytics/stats"
+fi
 echo "  - Voir le mot de passe admin : cat $TARGET_DIR/.env | grep ADMIN_PASSWORD"
 echo ""
+if [ "$ANALYTICS_TABLES_FINAL" != "2" ]; then
+    echo "====================================="
+    echo "  NOTE SUR L'ANALYTICS"
+    echo "====================================="
+    echo ""
+    echo "Les tables analytics n'ont pas été créées automatiquement."
+    echo "Pour activer l'analytics, exécutez manuellement :"
+    echo ""
+    echo "  cd $TARGET_DIR"
+    echo "  npm run db:push"
+    echo "  pm2 restart fullstack-js-app"
+    echo ""
+fi
