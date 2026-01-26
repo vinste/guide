@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import analyticsRouter from "./analytics";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -13,6 +14,9 @@ export async function registerRoutes(
   // Setup Auth first
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  // === ANALYTICS ROUTES (Public) ===
+  app.use('/api/analytics', analyticsRouter);
 
   // === PUBLIC ROUTES ===
 
