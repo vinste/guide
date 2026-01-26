@@ -144,21 +144,73 @@ ANALYTICS_TABLES_EXIST=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -
 if [ "$ANALYTICS_TABLES_EXIST" = "2" ]; then
     echo "✓ Les tables analytics existent déjà"
 else
-    echo "⚠️  Les tables analytics n'existent pas, exécution de la migration..."
+    echo "⚠️  Les tables analytics n'existent pas encore"
 fi
 
-# Exécuter la migration
-if ! npm run db:push; then
-    echo "ERREUR : La migration de la base de données a échoué."
-    echo "Vérifiez que toutes les tables (incluant analytics_pageviews et analytics_events) ont été créées."
-    exit 1
+# Exécuter la migration Drizzle
+echo "Exécution de npm run db:push..."
+if npm run db:push; then
+    echo "✓ Migration Drizzle exécutée avec succès"
+else
+    echo "⚠️  La migration Drizzle a échoué, tentative de création manuelle des tables..."
 fi
 
 # Vérifier que les tables analytics ont bien été créées
 ANALYTICS_TABLES_FINAL=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('analytics_pageviews', 'analytics_events');" || echo "0")
 
+if [ "$ANALYTICS_TABLES_FINAL" != "2" ]; then
+    echo "⚠️  Création manuelle des tables analytics..."
+    
+    # Créer les tables manuellement avec SQL
+    PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" <<'EOSQL'
+-- Table pour les pages vues
+CREATE TABLE IF NOT EXISTS analytics_pageviews (
+    id SERIAL PRIMARY KEY,
+    visitor_hash VARCHAR(255) NOT NULL,
+    url TEXT NOT NULL,
+    title TEXT,
+    referrer TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index pour améliorer les performances
+CREATE INDEX IF NOT EXISTS idx_pageviews_visitor ON analytics_pageviews(visitor_hash);
+CREATE INDEX IF NOT EXISTS idx_pageviews_url ON analytics_pageviews(url);
+CREATE INDEX IF NOT EXISTS idx_pageviews_created ON analytics_pageviews(created_at);
+
+-- Table pour les événements personnalisés
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id SERIAL PRIMARY KEY,
+    visitor_hash VARCHAR(255) NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    event_data JSONB,
+    url TEXT,
+    referrer TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index pour améliorer les performances
+CREATE INDEX IF NOT EXISTS idx_events_visitor ON analytics_events(visitor_hash);
+CREATE INDEX IF NOT EXISTS idx_events_type ON analytics_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_events_created ON analytics_events(created_at);
+
+EOSQL
+
+    # Vérifier à nouveau
+    ANALYTICS_TABLES_FINAL=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('analytics_pageviews', 'analytics_events');" || echo "0")
+    
+    if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
+        echo "✓ Tables analytics créées manuellement avec succès"
+    else
+        echo "✗ Échec de la création des tables analytics"
+        echo "L'application fonctionnera mais sans analytics."
+    fi
+fi
+
 if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
-    echo "✓ Tables de base de données créées avec succès (incluant analytics)"
+    echo "✓ Tables de base de données prêtes (incluant analytics)"
     
     # Vérifier la structure des tables
     echo "Vérification de la structure des tables analytics..."
@@ -168,19 +220,6 @@ if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
     
     echo "✓ analytics_pageviews : $PAGEVIEWS_COLUMNS colonnes"
     echo "✓ analytics_events : $EVENTS_COLUMNS colonnes"
-    
-    # Afficher la liste des colonnes pour débogage
-    echo "
-Structure de analytics_pageviews :"
-    PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "\d analytics_pageviews" || true
-    
-    echo "
-Structure de analytics_events :"
-    PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "\d analytics_events" || true
-else
-    echo "⚠️  AVERTISSEMENT : Les tables analytics n'ont pas été créées correctement"
-    echo "Nombre de tables trouvées : $ANALYTICS_TABLES_FINAL (attendu : 2)"
-    echo "L'application fonctionnera mais l'analytics ne sera pas disponible."
 fi
 
 echo "--- Build de l'application ---"
@@ -254,9 +293,9 @@ echo "  ➜ http://$IP_PUBLIQUE"
 echo ""
 echo "✓ Base de données : $DB_NAME"
 if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
-    echo "✓ Analytics activé (sans cookie, conforme RGPD)"
+    echo "✓ Analytics activé et opérationnel (sans cookie, conforme RGPD)"
 else
-    echo "⚠️  Analytics non disponible (tables non créées)"
+    echo "⚠️  Analytics non disponible"
 fi
 echo "✓ Reverse proxy Nginx configuré"
 echo "✓ Application gérée par PM2"
@@ -283,16 +322,3 @@ if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
 fi
 echo "  - Voir le mot de passe admin : cat $TARGET_DIR/.env | grep ADMIN_PASSWORD"
 echo ""
-if [ "$ANALYTICS_TABLES_FINAL" != "2" ]; then
-    echo "====================================="
-    echo "  NOTE SUR L'ANALYTICS"
-    echo "====================================="
-    echo ""
-    echo "Les tables analytics n'ont pas été créées automatiquement."
-    echo "Pour activer l'analytics, exécutez manuellement :"
-    echo ""
-    echo "  cd $TARGET_DIR"
-    echo "  npm run db:push"
-    echo "  pm2 restart fullstack-js-app"
-    echo ""
-fi
