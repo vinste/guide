@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from './db';
 import { analyticsPageviews, analyticsEvents } from '../shared/schema';
+import { sql, count, countDistinct, desc, and, gte, isNotNull, ne } from 'drizzle-orm';
 import crypto from 'crypto';
 
 const router = Router();
@@ -100,50 +101,82 @@ router.get('/stats', async (req, res) => {
     const daysAgo = new Date();
     daysAgo.setDate(daysAgo.getDate() - Number(days));
 
-    // Requête SQL pour obtenir les statistiques
-    const stats = await db.execute(`
+    // Statistiques générales avec SQL brut pour compatibilité
+    const statsQuery = sql`
       SELECT 
         COUNT(*) as total_pageviews,
         COUNT(DISTINCT visitor_hash) as unique_visitors,
         COUNT(DISTINCT DATE(created_at)) as active_days
-      FROM analytics_pageviews
-      WHERE created_at >= $1
-    `, [daysAgo]);
+      FROM ${analyticsPageviews}
+      WHERE created_at >= ${daysAgo}
+    `;
+    
+    const statsResult = await db.execute(statsQuery);
+    const stats = statsResult.rows[0] || { 
+      total_pageviews: 0, 
+      unique_visitors: 0, 
+      active_days: 0 
+    };
 
     // Pages les plus visitées
-    const topPages = await db.execute(`
+    const topPagesQuery = sql`
       SELECT 
         url,
         title,
         COUNT(*) as views
-      FROM analytics_pageviews
-      WHERE created_at >= $1
+      FROM ${analyticsPageviews}
+      WHERE created_at >= ${daysAgo}
       GROUP BY url, title
       ORDER BY views DESC
       LIMIT 10
-    `, [daysAgo]);
+    `;
+    
+    const topPagesResult = await db.execute(topPagesQuery);
+    const topPages = topPagesResult.rows;
 
     // Referrers principaux
-    const topReferrers = await db.execute(`
+    const topReferrersQuery = sql`
       SELECT 
         referrer,
         COUNT(*) as visits
-      FROM analytics_pageviews
-      WHERE created_at >= $1 AND referrer IS NOT NULL AND referrer != ''
+      FROM ${analyticsPageviews}
+      WHERE created_at >= ${daysAgo} 
+        AND referrer IS NOT NULL 
+        AND referrer != ''
       GROUP BY referrer
       ORDER BY visits DESC
       LIMIT 10
-    `, [daysAgo]);
+    `;
+    
+    const topReferrersResult = await db.execute(topReferrersQuery);
+    const topReferrers = topReferrersResult.rows;
 
     res.json({
       period: `${days} days`,
-      stats: stats.rows[0],
-      topPages: topPages.rows,
-      topReferrers: topReferrers.rows,
+      stats: {
+        total_pageviews: Number(stats.total_pageviews),
+        unique_visitors: Number(stats.unique_visitors),
+        active_days: Number(stats.active_days),
+      },
+      topPages: topPages.map((page: any) => ({
+        url: page.url,
+        title: page.title,
+        views: Number(page.views),
+      })),
+      topReferrers: topReferrers.map((ref: any) => ({
+        referrer: ref.referrer,
+        visits: Number(ref.visits),
+      })),
     });
   } catch (error) {
     console.error('Error fetching stats:', error);
-    res.status(500).json({ error: 'Failed to fetch stats' });
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
+    res.status(500).json({ 
+      error: 'Failed to fetch stats',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      hint: 'Vérifiez que les tables analytics_pageviews et analytics_events existent dans la base de données'
+    });
   }
 });
 
