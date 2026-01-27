@@ -106,7 +106,8 @@ router.get('/stats', async (req, res) => {
       SELECT 
         COUNT(*) as total_pageviews,
         COUNT(DISTINCT visitor_hash) as unique_visitors,
-        COUNT(DISTINCT DATE(created_at)) as active_days
+        COUNT(DISTINCT DATE(created_at)) as active_days,
+        ROUND(COUNT(*)::numeric / NULLIF(COUNT(DISTINCT visitor_hash), 0), 2) as avg_pages_per_visitor
       FROM ${analyticsPageviews}
       WHERE created_at >= ${daysAgo}
     `;
@@ -115,15 +116,53 @@ router.get('/stats', async (req, res) => {
     const stats = statsResult.rows[0] || { 
       total_pageviews: 0, 
       unique_visitors: 0, 
-      active_days: 0 
+      active_days: 0,
+      avg_pages_per_visitor: 0
     };
+
+    // Nouveaux vs retournants (visiteurs qui ont visité avant la période)
+    const visitorTypesQuery = sql`
+      WITH period_visitors AS (
+        SELECT DISTINCT visitor_hash
+        FROM ${analyticsPageviews}
+        WHERE created_at >= ${daysAgo}
+      ),
+      previous_visitors AS (
+        SELECT DISTINCT visitor_hash
+        FROM ${analyticsPageviews}
+        WHERE created_at < ${daysAgo}
+      )
+      SELECT 
+        COUNT(CASE WHEN pv.visitor_hash NOT IN (SELECT visitor_hash FROM previous_visitors) THEN 1 END) as new_visitors,
+        COUNT(CASE WHEN pv.visitor_hash IN (SELECT visitor_hash FROM previous_visitors) THEN 1 END) as returning_visitors
+      FROM period_visitors pv
+    `;
+    
+    const visitorTypesResult = await db.execute(visitorTypesQuery);
+    const visitorTypes = visitorTypesResult.rows[0] || { new_visitors: 0, returning_visitors: 0 };
+
+    // Tendance quotidienne (visiteurs uniques par jour)
+    const dailyTrendQuery = sql`
+      SELECT 
+        DATE(created_at) as date,
+        COUNT(DISTINCT visitor_hash) as visitors,
+        COUNT(*) as pageviews
+      FROM ${analyticsPageviews}
+      WHERE created_at >= ${daysAgo}
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `;
+    
+    const dailyTrendResult = await db.execute(dailyTrendQuery);
+    const dailyTrend = dailyTrendResult.rows;
 
     // Pages les plus visitées
     const topPagesQuery = sql`
       SELECT 
         url,
         title,
-        COUNT(*) as views
+        COUNT(*) as views,
+        COUNT(DISTINCT visitor_hash) as unique_visitors
       FROM ${analyticsPageviews}
       WHERE created_at >= ${daysAgo}
       GROUP BY url, title
@@ -138,7 +177,8 @@ router.get('/stats', async (req, res) => {
     const topReferrersQuery = sql`
       SELECT 
         referrer,
-        COUNT(*) as visits
+        COUNT(*) as visits,
+        COUNT(DISTINCT visitor_hash) as unique_visitors
       FROM ${analyticsPageviews}
       WHERE created_at >= ${daysAgo} 
         AND referrer IS NOT NULL 
@@ -151,21 +191,56 @@ router.get('/stats', async (req, res) => {
     const topReferrersResult = await db.execute(topReferrersQuery);
     const topReferrers = topReferrersResult.rows;
 
+    // Top navigateurs (user agents simplifiés)
+    const browsersQuery = sql`
+      SELECT 
+        CASE 
+          WHEN user_agent LIKE '%Chrome%' AND user_agent NOT LIKE '%Edg%' THEN 'Chrome'
+          WHEN user_agent LIKE '%Firefox%' THEN 'Firefox'
+          WHEN user_agent LIKE '%Safari%' AND user_agent NOT LIKE '%Chrome%' THEN 'Safari'
+          WHEN user_agent LIKE '%Edg%' THEN 'Edge'
+          WHEN user_agent LIKE '%OPR%' OR user_agent LIKE '%Opera%' THEN 'Opera'
+          ELSE 'Autre'
+        END as browser,
+        COUNT(DISTINCT visitor_hash) as visitors
+      FROM ${analyticsPageviews}
+      WHERE created_at >= ${daysAgo}
+      GROUP BY browser
+      ORDER BY visitors DESC
+    `;
+    
+    const browsersResult = await db.execute(browsersQuery);
+    const browsers = browsersResult.rows;
+
     res.json({
       period: `${days} days`,
       stats: {
         total_pageviews: Number(stats.total_pageviews),
         unique_visitors: Number(stats.unique_visitors),
         active_days: Number(stats.active_days),
+        avg_pages_per_visitor: Number(stats.avg_pages_per_visitor) || 0,
+        new_visitors: Number(visitorTypes.new_visitors),
+        returning_visitors: Number(visitorTypes.returning_visitors),
       },
+      dailyTrend: dailyTrend.map((day: any) => ({
+        date: day.date,
+        visitors: Number(day.visitors),
+        pageviews: Number(day.pageviews),
+      })),
       topPages: topPages.map((page: any) => ({
         url: page.url,
         title: page.title,
         views: Number(page.views),
+        unique_visitors: Number(page.unique_visitors),
       })),
       topReferrers: topReferrers.map((ref: any) => ({
         referrer: ref.referrer,
         visits: Number(ref.visits),
+        unique_visitors: Number(ref.unique_visitors),
+      })),
+      browsers: browsers.map((b: any) => ({
+        browser: b.browser,
+        visitors: Number(b.visitors),
       })),
     });
   } catch (error) {
