@@ -143,6 +143,31 @@ ANALYTICS_TABLES_EXIST=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -
 
 if [ "$ANALYTICS_TABLES_EXIST" = "2" ]; then
     echo "✓ Les tables analytics existent déjà"
+    
+    # Vérifier si la colonne country existe
+    COUNTRY_COLUMN_EXISTS=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_pageviews' AND column_name = 'country';" || echo "0")
+    
+    if [ "$COUNTRY_COLUMN_EXISTS" = "0" ]; then
+        echo "⚠️  La colonne 'country' n'existe pas, ajout en cours..."
+        PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "ALTER TABLE analytics_pageviews ADD COLUMN IF NOT EXISTS country VARCHAR(2);"
+        echo "✓ Colonne 'country' ajoutée avec succès"
+    else
+        echo "✓ La colonne 'country' existe déjà"
+    fi
+    
+    # Vérifier les autres colonnes importantes
+    SCREEN_COLUMN_EXISTS=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_pageviews' AND column_name = 'screen';" || echo "0")
+    LANGUAGE_COLUMN_EXISTS=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_pageviews' AND column_name = 'language';" || echo "0")
+    
+    if [ "$SCREEN_COLUMN_EXISTS" = "0" ]; then
+        echo "Ajout de la colonne 'screen'..."
+        PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "ALTER TABLE analytics_pageviews ADD COLUMN IF NOT EXISTS screen VARCHAR(20);"
+    fi
+    
+    if [ "$LANGUAGE_COLUMN_EXISTS" = "0" ]; then
+        echo "Ajout de la colonne 'language'..."
+        PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "ALTER TABLE analytics_pageviews ADD COLUMN IF NOT EXISTS language VARCHAR(10);"
+    fi
 else
     echo "⚠️  Les tables analytics n'existent pas encore"
 fi
@@ -166,34 +191,36 @@ if [ "$ANALYTICS_TABLES_FINAL" != "2" ]; then
 -- Table pour les pages vues
 CREATE TABLE IF NOT EXISTS analytics_pageviews (
     id SERIAL PRIMARY KEY,
-    visitor_hash VARCHAR(255) NOT NULL,
     url TEXT NOT NULL,
-    title TEXT,
     referrer TEXT,
+    title TEXT,
+    screen VARCHAR(20),
+    language VARCHAR(10),
+    country VARCHAR(2),
+    visitor_hash VARCHAR(64) NOT NULL,
     user_agent TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- Index pour améliorer les performances
 CREATE INDEX IF NOT EXISTS idx_pageviews_visitor ON analytics_pageviews(visitor_hash);
 CREATE INDEX IF NOT EXISTS idx_pageviews_url ON analytics_pageviews(url);
 CREATE INDEX IF NOT EXISTS idx_pageviews_created ON analytics_pageviews(created_at);
+CREATE INDEX IF NOT EXISTS idx_pageviews_country ON analytics_pageviews(country);
 
 -- Table pour les événements personnalisés
 CREATE TABLE IF NOT EXISTS analytics_events (
     id SERIAL PRIMARY KEY,
-    visitor_hash VARCHAR(255) NOT NULL,
-    event_type VARCHAR(100) NOT NULL,
-    event_data JSONB,
-    url TEXT,
-    referrer TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    event_name TEXT NOT NULL,
+    event_data TEXT,
+    url TEXT NOT NULL,
+    visitor_hash VARCHAR(64) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- Index pour améliorer les performances
 CREATE INDEX IF NOT EXISTS idx_events_visitor ON analytics_events(visitor_hash);
-CREATE INDEX IF NOT EXISTS idx_events_type ON analytics_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_events_name ON analytics_events(event_name);
 CREATE INDEX IF NOT EXISTS idx_events_created ON analytics_events(created_at);
 
 EOSQL
@@ -217,9 +244,16 @@ if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
     
     PAGEVIEWS_COLUMNS=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_pageviews';" || echo "0")
     EVENTS_COLUMNS=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_events';" || echo "0")
+    COUNTRY_COLUMN=$(PGPASSWORD="$DB_PASS" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'analytics_pageviews' AND column_name = 'country';" || echo "0")
     
     echo "✓ analytics_pageviews : $PAGEVIEWS_COLUMNS colonnes"
     echo "✓ analytics_events : $EVENTS_COLUMNS colonnes"
+    
+    if [ "$COUNTRY_COLUMN" = "1" ]; then
+        echo "✓ Colonne 'country' présente pour la géolocalisation"
+    else
+        echo "⚠️  Colonne 'country' manquante"
+    fi
 fi
 
 echo "--- Build de l'application ---"
@@ -294,6 +328,9 @@ echo ""
 echo "✓ Base de données : $DB_NAME"
 if [ "$ANALYTICS_TABLES_FINAL" = "2" ]; then
     echo "✓ Analytics activé et opérationnel (sans cookie, conforme RGPD)"
+    if [ "$COUNTRY_COLUMN" = "1" ]; then
+        echo "✓ Géolocalisation des visiteurs activée"
+    fi
 else
     echo "⚠️  Analytics non disponible"
 fi
