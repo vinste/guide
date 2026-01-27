@@ -3,6 +3,7 @@ import { db } from './db';
 import { analyticsPageviews, analyticsEvents } from '../shared/schema';
 import { sql, count, countDistinct, desc, and, gte, isNotNull, ne } from 'drizzle-orm';
 import crypto from 'crypto';
+import geoip from 'geoip-lite';
 
 const router = Router();
 
@@ -15,6 +16,19 @@ function hashVisitor(ip: string, userAgent: string): string {
   const hash = crypto.createHash('sha256');
   hash.update(`${ip}-${userAgent}-${salt}`);
   return hash.digest('hex');
+}
+
+/**
+ * Détecte le pays à partir d'une adresse IP
+ */
+function detectCountry(ip: string): string | null {
+  // Ignorer les IPs locales
+  if (ip === 'unknown' || ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+    return null;
+  }
+  
+  const geo = geoip.lookup(ip);
+  return geo?.country || null;
 }
 
 /**
@@ -38,6 +52,7 @@ router.post('/pageview', async (req, res) => {
     
     const userAgent = req.headers['user-agent'] || 'unknown';
     const visitorHash = hashVisitor(ip, userAgent);
+    const country = detectCountry(ip);
 
     // Insertion dans la base de données
     await db.insert(analyticsPageviews).values({
@@ -46,6 +61,7 @@ router.post('/pageview', async (req, res) => {
       title: title || null,
       screen: screen || null,
       language: language || null,
+      country: country || null,
       visitorHash,
       userAgent,
     });
@@ -212,6 +228,23 @@ router.get('/stats', async (req, res) => {
     const browsersResult = await db.execute(browsersQuery);
     const browsers = browsersResult.rows;
 
+    // Top pays
+    const countriesQuery = sql`
+      SELECT 
+        country,
+        COUNT(DISTINCT visitor_hash) as visitors,
+        COUNT(*) as pageviews
+      FROM ${analyticsPageviews}
+      WHERE created_at >= ${daysAgo}
+        AND country IS NOT NULL
+      GROUP BY country
+      ORDER BY visitors DESC
+      LIMIT 15
+    `;
+    
+    const countriesResult = await db.execute(countriesQuery);
+    const countries = countriesResult.rows;
+
     res.json({
       period: `${days} days`,
       stats: {
@@ -241,6 +274,11 @@ router.get('/stats', async (req, res) => {
       browsers: browsers.map((b: any) => ({
         browser: b.browser,
         visitors: Number(b.visitors),
+      })),
+      countries: countries.map((c: any) => ({
+        country: c.country,
+        visitors: Number(c.visitors),
+        pageviews: Number(c.pageviews),
       })),
     });
   } catch (error) {
