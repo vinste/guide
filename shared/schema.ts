@@ -59,6 +59,7 @@ export const analyticsPageviews = pgTable("analytics_pageviews", {
   title: text("title"),
   screen: varchar("screen", { length: 20 }),
   language: varchar("language", { length: 10 }),
+  country: varchar("country", { length: 2 }), // Code pays ISO (ex: FR, US, DE)
   visitorHash: varchar("visitor_hash", { length: 64 }).notNull(),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
