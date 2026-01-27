@@ -19,16 +19,19 @@ function hashVisitor(ip: string, userAgent: string): string {
 }
 
 /**
- * Détecte le pays à partir d'une adresse IP
+ * Détecte le pays et la région à partir d'une adresse IP
  */
-function detectCountry(ip: string): string | null {
+function detectLocation(ip: string): { country: string | null; region: string | null } {
   // Ignorer les IPs locales
   if (ip === 'unknown' || ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-    return null;
+    return { country: null, region: null };
   }
   
   const geo = geoip.lookup(ip);
-  return geo?.country || null;
+  return {
+    country: geo?.country || null,
+    region: geo?.region || null,
+  };
 }
 
 /**
@@ -52,7 +55,7 @@ router.post('/pageview', async (req, res) => {
     
     const userAgent = req.headers['user-agent'] || 'unknown';
     const visitorHash = hashVisitor(ip, userAgent);
-    const country = detectCountry(ip);
+    const location = detectLocation(ip);
 
     // Insertion dans la base de données
     await db.insert(analyticsPageviews).values({
@@ -61,7 +64,8 @@ router.post('/pageview', async (req, res) => {
       title: title || null,
       screen: screen || null,
       language: language || null,
-      country: country || null,
+      country: location.country || null,
+      region: location.region || null,
       visitorHash,
       userAgent,
     });
@@ -245,6 +249,25 @@ router.get('/stats', async (req, res) => {
     const countriesResult = await db.execute(countriesQuery);
     const countries = countriesResult.rows;
 
+    // Top régions (pour FR, DE, AT, CH)
+    const regionsQuery = sql`
+      SELECT 
+        country,
+        region,
+        COUNT(DISTINCT visitor_hash) as visitors,
+        COUNT(*) as pageviews
+      FROM ${analyticsPageviews}
+      WHERE created_at >= ${daysAgo}
+        AND country IN ('FR', 'DE', 'AT', 'CH')
+        AND region IS NOT NULL
+      GROUP BY country, region
+      ORDER BY visitors DESC
+      LIMIT 20
+    `;
+    
+    const regionsResult = await db.execute(regionsQuery);
+    const regions = regionsResult.rows;
+
     res.json({
       period: `${days} days`,
       stats: {
@@ -279,6 +302,12 @@ router.get('/stats', async (req, res) => {
         country: c.country,
         visitors: Number(c.visitors),
         pageviews: Number(c.pageviews),
+      })),
+      regions: regions.map((r: any) => ({
+        country: r.country,
+        region: r.region,
+        visitors: Number(r.visitors),
+        pageviews: Number(r.pageviews),
       })),
     });
   } catch (error) {
