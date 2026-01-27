@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, TrendingUp, Users, Eye, ExternalLink, UserCheck, UserPlus, BarChart, Chrome } from 'lucide-react';
+import { Loader2, TrendingUp, Users, Eye, ExternalLink, UserCheck, UserPlus, BarChart, Chrome, Globe } from 'lucide-react';
 import { useState } from 'react';
+import { getCountryInfo } from '@/lib/countries';
 
 interface AnalyticsStats {
   period: string;
@@ -33,6 +34,11 @@ interface AnalyticsStats {
   browsers: Array<{
     browser: string;
     visitors: number;
+  }>;
+  countries: Array<{
+    country: string;
+    visitors: number;
+    pageviews: number;
   }>;
 }
 
@@ -206,6 +212,58 @@ export function AnalyticsPanel() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Pays des visiteurs */}
+          {stats?.countries && stats.countries.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Globe className="h-5 w-5" />
+                  <span>Origine géographique des visiteurs</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {stats.countries.map((country, index) => {
+                    const countryInfo = getCountryInfo(country.country);
+                    const maxVisitors = Math.max(...stats.countries.map(c => c.visitors));
+                    const percentage = (country.visitors / maxVisitors) * 100;
+                    const totalPercentage = stats.stats.unique_visitors
+                      ? Math.round((country.visitors / stats.stats.unique_visitors) * 100)
+                      : 0;
+                    
+                    return (
+                      <div key={index} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span className="text-xs text-gray-500 w-6 text-right">#{index + 1}</span>
+                        <span className="text-2xl" title={countryInfo.name}>{countryInfo.flag}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline space-x-2">
+                            <span className="text-sm font-medium text-gray-900">{countryInfo.name}</span>
+                            <span className="text-xs text-gray-400">({country.country})</span>
+                          </div>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                              <div
+                                className="bg-indigo-500 h-full rounded-full transition-all"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-gray-900">{country.visitors}</div>
+                          <div className="text-xs text-gray-500">{totalPercentage}%</div>
+                        </div>
+                        <div className="text-xs text-gray-400 w-20 text-right">
+                          {country.pageviews} vues
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Tendance quotidienne */}
           {stats?.dailyTrend && stats.dailyTrend.length > 0 && (
@@ -395,7 +453,8 @@ export function AnalyticsPanel() {
                   </h4>
                   <p className="text-xs text-blue-700">
                     Ces statistiques sont collectées de manière anonyme, sans cookies ni tracking
-                    inter-sites. Les adresses IP sont hashées et ne sont jamais stockées. Conforme RGPD.
+                    inter-sites. Les adresses IP sont hashées et ne sont jamais stockées. La géolocalisation
+                    est déterminée localement sans transmettre d'informations à des tiers. Conforme RGPD.
                   </p>
                 </div>
               </div>
