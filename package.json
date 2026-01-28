@@ -8,7 +8,8 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "check-db": "tsx scripts/check-db-schema.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -47,12 +48,14 @@
     "cmdk": "^1.1.1",
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.0.1",
     "express-session": "^1.18.2",
     "framer-motion": "^11.13.1",
+    "geoip-lite": "^1.4.10",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.453.0",
     "memoizee": "^0.4.17",
@@ -87,6 +90,7 @@
     "@types/connect-pg-simple": "^7.0.3",
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.2",
+    "@types/geoip-lite": "^1.4.4",
     "@types/node": "20.19.27",
     "@types/passport": "^1.0.17",
     "@types/passport-local": "^1.0.38",
